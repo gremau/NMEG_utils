@@ -1,0 +1,6 @@
+gcolour=[0.9 0.5 0.0]
+scolour=[0.6 0.2 0]
+jcolour=[0.25 1.0 0.0]
+pjcolour=[0.0 0.5 0.0]
+pcolour=[0.5 0.5 1.0]
+mcolour=[0.0 0.0 0.6]
