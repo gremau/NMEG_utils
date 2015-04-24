@@ -7,8 +7,6 @@
 *.png
 *.svg
 *.eps
-*.dat
-*.txt
 *.bak
 \#*\#
 scratch.m
