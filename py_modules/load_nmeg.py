@@ -29,8 +29,8 @@ def load_aflx_file( fname, year ) :
         array (structured) 0 holds MesoWest data in named columns
         array 1 holds date objects matching data in array 1
     """
-    # a date parser for AF files
-    def dparse( yr, doy, hhmm ):       
+    # a date parser for older AF files (2007-2008)
+    def dparse1( yr, doy, hhmm ):       
         yr = int( yr )
         # Some files have a line of zeros at the end - hack it
         if yr != year:
@@ -44,9 +44,18 @@ def load_aflx_file( fname, year ) :
         
     print 'Parsing ' + fname
 
-    parsed_df =  pd.read_csv( fname, skiprows=( 0,1,2,4 ), header=0,
-            parse_dates={ 'Date':[ 0, 1, 2 ] }, date_parser=dparse,
-            na_values='-9999', index_col='Date' );
+    if year < 2009:
+        # Use old date parser
+        parsed_df =  pd.read_csv( fname, skiprows=( 0,1,2,4 ), header=0,
+                parse_dates={ 'Date':[ 0, 1, 2 ] }, date_parser=dparse1,
+                na_values='-9999', index_col='Date' )
+
+    else:
+        # Use ISO date parse
+        parsed_df =  pd.read_csv( fname, skiprows=( 0,1,2,4 ), header=0,
+                parse_dates={ 'Date': [0] },
+                na_values='-9999', index_col='Date' )
+
 
     # We will reindex to include every 30-min period during the given year,
     # from YR-01-01 00:30 to YR+1-01-01 00:30
