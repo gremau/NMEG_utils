@@ -44,11 +44,19 @@ def load_aflx_file( fname, year ) :
         
     print 'Parsing ' + fname
 
+    # The old files, which we are still using for now, have different date
+    # columns and variable names, so they need to be parsed a little
+    # differently and converted.
     if year < 2009:
         # Use old date parser
         parsed_df =  pd.read_csv( fname, skiprows=( 0,1,2,4 ), header=0,
                 parse_dates={ 'Date':[ 0, 1, 2 ] }, date_parser=dparse1,
                 na_values='-9999', index_col='Date' )
+        # Rename old columns to new format
+        parsed_df.rename(columns={ 
+            'FC':'FC_f', 'Rg':'Rg_f', 'VPD':'VPD_f', 'RH':'RH_f',
+            'PRECIP':'PRECIP_f', 'TA':'TA_f', 'GPP':'GPP_GL2010_amended_ecb',
+            'RE':'RE_GL2010_amended_ecb'}, inplace=True)
 
     else:
         # Use ISO date parse
