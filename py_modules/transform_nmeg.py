@@ -54,9 +54,10 @@ def sum_30min_et( df, t_air ) :
 
     return df_int[ export_cname ]
 
-def resample_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RE', 'FC',  ], 
-        le_flux=[ 'LE' ], avg_cols=[ 'TA', 'RH', 'Rg', 'RNET' ], 
-        precip_col='PRECIP' , tair_col='TA' ):
+def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RE', 'FC',  ], 
+        le_flux=[ 'LE' ], avg_cols=[ 'TA_f', 'RH', 'Rg_f', 'RNET' ],
+        minmax_cols=[ 'TA_f', 'VPD_f' ],
+        precip_col='PRECIP' , tair_col='TA_f' ):
     
     # Calculate integrated c fluxes
     c_flux_sums = sum_30min_c_flux( df[ c_fluxes ] )
@@ -67,13 +68,23 @@ def resample_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RE', 'FC',  ],
     df_sum = pd.concat( [ c_flux_sums, et_flux_sum, df[ precip_col ]], 
                           axis=1 );
     df_avg = df[ avg_cols ]
+    df_min = df[ minmax_cols ]
+    df_max = df[ minmax_cols ]
     
     # Resample to daily using sum or mean
     sums_resamp = df_sum.resample( freq, how='sum' )
     avg_resamp = df_avg.resample( freq, how='mean' )
+    min_resamp = df_min.resample( freq, how='min' )
+    max_resamp = df_max.resample( freq, how='max' )
+
+    # Rename the min/max columns
+    for i in minmax_cols:
+        min_resamp.rename(columns={ i:i + '_min'}, inplace=True)
+        max_resamp.rename(columns={ i:i + '_max'}, inplace=True)
 
     # Put to dataframes back together
-    df_resamp = pd.concat( [ sums_resamp, avg_resamp ], axis=1 )
+    df_resamp = pd.concat( [ sums_resamp, avg_resamp, 
+        min_resamp, max_resamp ], axis=1 )
 
     return df_resamp
 
