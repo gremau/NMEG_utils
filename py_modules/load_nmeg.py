@@ -54,9 +54,8 @@ def load_aflx_file( fname, year ) :
                 na_values='-9999', index_col='Date' )
         # Rename old columns to new format
         parsed_df.rename(columns={ 
-            'FC':'FC_f', 'Rg':'Rg_f', 'VPD':'VPD_f', 'RH':'RH_f',
-            'PRECIP':'PRECIP_f', 'TA':'TA_f', 'GPP':'GPP_GL2010_amended_ecb',
-            'RE':'RE_GL2010_amended_ecb'}, inplace=True)
+            'FC':'FC_F', 'Rg':'SW_IN_F', 'VPD':'VPD_F', 'RH':'RH_F',
+            'PRECIP':'P_F', 'TA':'TA_F', 'RE':'RECO'}, inplace=True)
 
     else:
         # Use ISO date parse

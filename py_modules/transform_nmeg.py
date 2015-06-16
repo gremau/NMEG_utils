@@ -54,10 +54,10 @@ def sum_30min_et( df, t_air ) :
 
     return df_int[ export_cname ]
 
-def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RE', 'FC',  ], 
-        le_flux=[ 'LE' ], avg_cols=[ 'TA_f', 'RH', 'Rg_f', 'RNET' ],
-        minmax_cols=[ 'TA_f', 'VPD_f' ],
-        precip_col='PRECIP' , tair_col='TA_f' ):
+def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F',  ], 
+        le_flux=[ 'LE' ], avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET' ],
+        minmax_cols=[ 'TA_F', 'VPD_F' ],
+        precip_col='P_F' , tair_col='TA_F' ):
     
     # Calculate integrated c fluxes
     c_flux_sums = sum_30min_c_flux( df[ c_fluxes ] )
