@@ -6,7 +6,7 @@ Functions for loading various hidden canyon data files
 """
 
 import numpy as np
-import ipdb as ipdb
+#import ipdb as ipdb
 import datetime as dt
 import pandas as pd
 import os
@@ -42,7 +42,7 @@ def load_aflx_file( fname, year ) :
                 dt.timedelta( days=doy, hours=int( hhmm[ 0:2 ] ),
                     minutes=int( hhmm[2:4] )))
         
-    print 'Parsing ' + fname
+    print('Parsing ' + fname)
 
     # The old files, which we are still using for now, have different date
     # columns and variable names, so they need to be parsed a little
@@ -74,7 +74,7 @@ def load_aflx_file( fname, year ) :
     idxyrs = parsed_df.index.year > 2005;
     parsed_df = parsed_df.iloc[ idxyrs, : ]
     if len( parsed_df.index ) < len( full_idx ):
-        print "WARNING: some observations may be missing!"
+        print( "WARNING: some observations may be missing!" )
     
     parsed_df = parsed_df.reindex( full_idx )
     
