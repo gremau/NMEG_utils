@@ -1,5 +1,5 @@
 """ 
-Functions for loading various NMEG data files
+Functions for conversions and transforms of NMEG data
 
  transform_nmeg.py
  Greg Maurer
