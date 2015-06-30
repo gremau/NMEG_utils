@@ -5,11 +5,9 @@ Functions for conversions and transforms of NMEG data
  Greg Maurer
 """
 
-import numpy as np
 #import ipdb as ipdb
 import datetime as dt
 import pandas as pd
-import os
 
 
 
