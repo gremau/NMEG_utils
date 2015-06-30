@@ -1,8 +1,8 @@
-# load_nmeg.py
-# Greg Maurer
-
 """ 
-Functions for loading various hidden canyon data files
+Functions for loading various NMEG data files
+
+ load_nmeg.py
+ Greg Maurer
 """
 
 import numpy as np
@@ -16,18 +16,18 @@ now = dt.datetime.now()
 
 def load_aflx_file( fname, year ) :
     """
-    Read files downloaded from MesoWest in specified path, return a list 
-    holding 2 numpy arrays.
+    Load a specified ameriflux file and return a pandas DataFrame object.
+    DataFrame has a datetime index and has been reindexed to include all
+    30 minute periods in one year. Two file formats (old AF or new AF
+    format) can be parsed and headers/index will be converted from old to
+    new format.
     
     Args:
-        stn (str) : station id desired (make sure files are in rawdata dir)
-        year (int): wateryear desired
+        fname (str) : path and filename of desired AF file
+        year (int)  : year of ameriflux file
 
     Return:
-        list: [array([swe1, swe2, swe3],...), array([date object])] 
-    
-        array (structured) 0 holds MesoWest data in named columns
-        array 1 holds date objects matching data in array 1
+        parsed_df   : pandas DataFrame    
     """
     # a date parser for older AF files (2007-2008)
     def dparse1( yr, doy, hhmm ):       
@@ -67,7 +67,7 @@ def load_aflx_file( fname, year ) :
 
 
     # We will reindex to include every 30-min period during the given year,
-    # from YR-01-01 00:30 to YR+1-01-01 00:30
+    # from YR-01-01 00:30 to YR+1-01-01 00:00
     full_idx = pd.date_range( str( year ) + '-01-01 00:30:00',
             str( year + 1 ) + '-01-01 00:00:00', freq = '30T')
 
@@ -81,22 +81,26 @@ def load_aflx_file( fname, year ) :
     
     return parsed_df
 
-    # Test whether any of the values are -99.9 (nondaily error)
-    #nondailytest = np.logical_or(swe1==-99.9, swe2==-99.9, swe3==-99.9) 
-    # Stack SWE data and convert to mm
-    #swe = np.column_stack((swe1, swe2, swe3))*25.4
-    # Create date array using Brighton file
-    
+
 def get_multiyr_aflx( site, afpath,
                       startyear=now.year - 1, endyear=now.year - 1,
                       gapfilled=True) :
     """
-    site: Site name ( Ameriflux style )
-    afpath: Path to directory of ameriflux files
-    gaps: Boolean, true=with_gaps, false=gapfilled
-    """
-    file_list = os.listdir( afpath )
+    Load a list of 1-year ameriflux files, append them, and then return
+    a pandas DataFrame object of AF data from startyear to endyear.
 
+    Args:
+        site        : Site name ( Ameriflux style )
+        afpath      : Path to directory of ameriflux files
+        startyear   : First year of data to include
+        endyear     : Last year of data to include
+        gapfilled   : Boolean, true=with_gaps, false=gapfilled files parsed
+
+    Return:
+        site_df     : pandas DataFrame containing multiple years of AF data
+                      from one site
+    """
+    
     if gapfilled:
         file_gap_type = 'gapfilled'
     else:
@@ -107,25 +111,32 @@ def get_multiyr_aflx( site, afpath,
             str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
     df = pd.DataFrame( index = newidx )
     
-    # Get the gapfilled files for each site in the folder and an
-    # indexed dataframe
+    # Get a list of filenames in the directory
+    file_list = os.listdir( afpath )
+
+    # Select desired files from file_list (by site and gapfilling)
     site_file_list = [ s for s in file_list if site in s ]
     site_file_list = [ s for s in site_file_list if file_gap_type in s ]
+    # Initialize DataFrame
     site_df = pd.DataFrame()
     # Loop through each year and fill the dataframe
     for j in range(startyear, endyear + 1):
         fName = '{0}_{1}_{2}.txt'.format( site, j, file_gap_type )
         # If theres is a file for that year, load it
         if fName in site_file_list:
+            # Call load_aflx_file
             year_df = load_aflx_file( afpath + fName, j )
             # And append to site_df
             site_df = site_df.append( year_df )
+        else:
+            print( 'WARNING: ' + fName + ' is missing')
 
     # Now standardize the time period and index of site_df and put
     # multiyear site flux values in measurement-specific dataframe
     idxyrs = site_df.index.year > startyear - 1;
     site_df = site_df.iloc[ idxyrs, : ]
     site_df = site_df.reindex( newidx )
+
     return site_df
 
 
@@ -133,9 +144,22 @@ def get_multisite_aflx_var( varname, sites, afpath,
                             startyear=now.year - 1, endyear=now.year - 1,
                             gapfilled=True ):
     """
-    Get a dataframe with one variable from multiple sites for (if desired)
-    multiple years
-    """ 
+    Load ameriflux files for a list of sites, append them, select out a
+    desired variable and then return a pandas DataFrame object of one AF
+    variable with columns for each site in list from startyear to endyear.
+
+    Args:
+        varname     : Desired Ameriflux variable
+        sites       : List of site names ( Ameriflux style )
+        afpath      : Path to directory of ameriflux files
+        startyear   : First year of data to include
+        endyear     : Last year of data to include
+        gapfilled   : Boolean, true=with_gaps, false=gapfilled files parsed
+
+    Return:
+        site_df     : pandas DataFrame containing multiple years of AF data
+                      from one site
+    """
     
     # Create empty dataframe spanning startyear to endyear
     # Will contain the multi-year column for each site
@@ -184,11 +208,6 @@ def load_PJ_VWC_file(fname) :
             parse_dates = [['year','month','mday']],
             index_col=2,na_values='NA');    
 
-    # Test whether any of the values are -99.9 (nondaily error)
-    #nondailytest = np.logical_or(swe1==-99.9, swe2==-99.9, swe3==-99.9) 
-    # Stack SWE data and convert to mm
-    #swe = np.column_stack((swe1, swe2, swe3))*25.4
-    # Create date array using Brighton file
 
 def add_WY_cols( df ) :
     """
