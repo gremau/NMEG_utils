@@ -54,9 +54,10 @@ def load_aflx_file( fname, year ) :
                 na_values='-9999', index_col='Date' )
         # Rename old columns to new format
         parsed_df.rename(columns={ 
-            'FC':'FC_F', 'Rg':'SW_IN_F', 'Rg_out':'SW_OUT', 'Rlong_in':'LW_IN',
-            'Rlong_out':'LW_OUT', 'VPD':'VPD_F', 'RH':'RH_F',
-            'PRECIP':'P_F', 'TA':'TA_F', 'RE':'RECO', 'FC_flag':'FC_F_FLAG'}, 
+            'FC':'FC_F', 'Rg':'SW_IN_F', 'Rg_out':'SW_OUT',
+            'Rlong_in':'LW_IN', 'Rlong_out':'LW_OUT', 'VPD':'VPD_F',
+            'RH':'RH_F','PRECIP':'P_F', 'TA':'TA_F', 'RE':'RECO',
+            'FC_flag':'FC_F_FLAG'}, 
             inplace=True)
 
     else:
@@ -168,7 +169,23 @@ def loadPRISMfile(fname) :
     return pd.read_csv(fname, header=0,
             parse_dates = True, index_col='date');
 
+
+def load_toa5_file(fname) :
+    """
+    Load a toa5 data file (raw ascii datalogger files)
     
+    Args:
+        fname (str) : the full file path and name
+
+    Return:
+        df : pandas data frame 
+    """       
+        
+    return pd.read_csv(fname, skiprows=( 0,2,3 ), header=0,
+            parse_dates = { 'Date': ['TIMESTAMP']}, index_col='Date',
+            na_values=['NaN', 'NAN', 'INF', '-INF']);
+
+
 def load_PJ_VWC_file(fname) :
     """
     Load a daily VWC data file (made by Laura)
@@ -207,8 +224,8 @@ def add_WY_cols( df ) :
     df_wy['doy_w'] = wy.dayofyear
     # Add hydrologic season columns
     df_wy['season'] = 'Null'
-    df_wy.season[(df_wy.index.month > 10) | (df_wy.index.month < 3)] = 'cold'
-    df_wy.season[(df_wy.index.month > 2) & (df_wy.index.month < 7)] = 'spring'
-    df_wy.season[(df_wy.index.month > 6) & (df_wy.index.month < 11)] = 'monsoon'
+    df_wy.season[(df_wy.index.month>10) | (df_wy.index.month<3)] = 'cold'
+    df_wy.season[(df_wy.index.month>2) & (df_wy.index.month<7)] = 'spring'
+    df_wy.season[(df_wy.index.month>6) & (df_wy.index.month<11)] = 'monsoon'
 
     return df_wy
