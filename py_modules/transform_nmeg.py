@@ -1,15 +1,13 @@
-# transform_nmeg.py
-# Greg Maurer
-
 """ 
-Functions for loading various NMEG data files
+Functions for conversions and transforms of NMEG data
+
+ transform_nmeg.py
+ Greg Maurer
 """
 
-import numpy as np
 #import ipdb as ipdb
 import datetime as dt
 import pandas as pd
-import os
 
 
 
@@ -19,17 +17,17 @@ def sum_30min_c_flux( df ) :
     sum (integrate) for the 30min periods for each column of data frame
     in the colnames variable.
     """
-    
+    # Initialize returned variables
     df_int = df.copy()
     export_cols = []
-
+    # For each input column create a new header and convert values to mass flux
     for cname in df.columns :
-        #
         export_cname = cname + '_g_int'
         export_cols.append( export_cname )
         df_int[ export_cname ] = df_int[ cname ] * ( 12.011/1e+06 ) * 1800
 
     return df_int[ export_cols ]
+
 
 def sum_30min_et( df, t_air ) :
     """
@@ -42,11 +40,10 @@ def sum_30min_et( df, t_air ) :
     """
 
     df_int = df.copy()
-
+    # Define the lambda parameter
     lmbda = ( 2.501 - 0.00236 * t_air ) * 1000
-
+    # For each input column create a new header and convert values to ET
     for i, cname in enumerate( df.columns ) :
-        #
         export_cname = 'ET_mm_int_' + str( i )
         et_mms = ( 1 / ( lmbda * 1000 )) * df_int[ cname ]
         et_mm_int = et_mms * 1800
@@ -54,11 +51,32 @@ def sum_30min_et( df, t_air ) :
 
     return df_int[ export_cname ]
 
+
 def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F',  ], 
         le_flux=[ 'LE_F' ], avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET' ],
         minmax_cols=[ 'TA_F', 'VPD_F' ],
         precip_col='P_F' , tair_col='TA_F' ):
-    
+    """
+    Integrate 30 minute flux data into a daily (or longer) frequency file. C
+    fluxes are converted from molar to mass flux and summed. Latent heat    
+    flux is converted to ET and summed. A variable number for other met and 
+    radiation values can be converted to averages, sums, or min/max outputs.
+
+    Args:
+        df          : pandas DataFrame object (usually derived from AF file)
+        freq        : frequency to resample to (default daily)
+        c_fluxes    : list of C flux header names (strings) to integrate
+        le_flux     : latent heat flux header name(s)
+        avg_cols    : list of header names (strings) to average
+        minmax_cols : list of header names (strings) to convert to min/max
+        precip_col  : precip header (string) - gets summed
+        tair_col    : air temperature header (string) used for ET calculation
+
+    Return:
+        df_resamp   : pandas dataframe with AF data at new frequency
+
+    """
+
     # Calculate integrated c fluxes
     c_flux_sums = sum_30min_c_flux( df[ c_fluxes ] )
     # Calculate integrated ET
