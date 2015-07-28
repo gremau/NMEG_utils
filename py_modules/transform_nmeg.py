@@ -52,7 +52,7 @@ def sum_30min_et( df, t_air ) :
     return df_int[ export_cname ]
 
 
-def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F',  ], 
+def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ], 
         le_flux=[ 'LE_F' ], avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET' ],
         minmax_cols=[ 'TA_F', 'VPD_F' ],
         precip_col='P_F' , tair_col='TA_F' ):
