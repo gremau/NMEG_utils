@@ -14,7 +14,7 @@ import os
 now = dt.datetime.now()
 
 
-def load_aflx_file( fname, year ) :
+def load_aflx_file( fname, year, old_date_parse=False ) :
     """
     Load a specified ameriflux file and return a pandas DataFrame object.
     DataFrame has a datetime index and has been reindexed to include all
@@ -47,7 +47,7 @@ def load_aflx_file( fname, year ) :
     # The old files, which we are still using for now, have different date
     # columns and variable names, so they need to be parsed a little
     # differently and converted.
-    if year < 2009:
+    if old_date_parse:
         # Use old date parser
         parsed_df =  pd.read_csv( fname, skiprows=( 0,1,2,4 ), header=0,
                 parse_dates={ 'Date':[ 0, 1, 2 ] }, date_parser=dparse1,
