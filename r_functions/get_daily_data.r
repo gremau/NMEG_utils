@@ -3,9 +3,9 @@
 #
 # Greg Maurer - Nov 23, 2014
 
-setwd('~/current/NMEG_fluxdata/data_analysis/R/')
+#setwd('~/current/NMEG_fluxdata/data_analysis/R/')
 
-proc_path <- '../processed_data/'
+proc_path <- 'processed_data/'
 
 library(plyr)
 library(reshape2)

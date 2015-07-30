@@ -172,8 +172,8 @@ def get_multisite_aflx_var( varname, sites, afpath,
     siteNames = sites
     for i, site in enumerate(siteNames):
         # Get the multi-year Ameriflux data for the site
-        site_df = get_multiyr_aflx( site, afpath, gapfilled, 
-                                    startyear, endyear )
+        site_df = get_multiyr_aflx( site, afpath, startyear, endyear, 
+                                    gapfilled )
         df[ site ] = site_df[ varname ]
 
     return df
