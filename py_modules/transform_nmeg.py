@@ -9,7 +9,7 @@ Functions for conversions and transforms of NMEG data
 import datetime as dt
 import pandas as pd
 
-
+now = dt.datetime.now()
 
 def sum_30min_c_flux( df ) :
     """
@@ -106,6 +106,39 @@ def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
 
     return df_resamp
 
+def get_var_allsites( datadict, varname, sites, startyear=now.year - 1,
+                      endyear=now.year - 1 ):
+    """
+    Take a dictionary of dataframes indexed by sitename, extract requested
+    variable from each one, and place in column (named by site) in a new
+    dataframe.
+
+    Args:
+        datadict    : Dictionary of dataframes with site keys
+        varname     : Desired Ameriflux variable
+        sites       : List of site names ( Ameriflux style )
+        startyear   : First year of data to include
+        endyear     : Last year of data to include
+
+    Return:
+        new_df     : pandas DataFrame containing multiple years of data
+                      from one site
+    """
+    
+    # Create empty dataframe spanning startyear to endyear
+    # Will contain the multi-year column for each site at the correct frequency
+    frequency = datadict[sites[1]].index.freq
+    newidx = pd.date_range(str(startyear) + '-01-01',
+                           str(endyear + 1) + '-01-01', freq = frequency)
+    new_df = pd.DataFrame(index = newidx)
+    
+    # Loop through site names and extract variable
+    for i, site in enumerate(sites):
+        # Get the multi-year data for the site
+        site_df = datadict[ site ]
+        new_df[ site ] = site_df[ varname ]
+
+    return new_df
 
 def add_WY_cols( df ) :
     """

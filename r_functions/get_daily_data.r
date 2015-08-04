@@ -31,8 +31,7 @@ rename_vars <- function(df) {
 
 
 # C flux columns to keep
-keep <- c("season", "year_w", "US.Vcm_g_int", "US.Vcp_g_int", "US.Mpj_g_int",
-          "US.Wjs_g_int", "US.Ses_g_int", "US.Seg_g_int")
+keep <- c("season", "year_w", "Vcm", "Vcp", "Mpj", "Wjs", "Ses", "Seg")
 
 # NEE
 fname <- paste( proc_path, 'FC_int_daily.csv', sep='')
@@ -58,20 +57,28 @@ RE_daily <- subset(RE_daily, subset = (year_w > 2007))
 RE_daily <- RE_daily[, keep]
 RE_daily <- rename_vars(RE_daily)
 
+# Ecosystem respiration
+fname <- paste( proc_path, 'ET_int_daily.csv', sep='')
+ET_daily <- read.csv(fname, na.strings=c("NA","NaN", " "))
+ET_daily <- subset(ET_daily, subset = (year_w > 2007))
+#ET_daily[RE_daily$year_w == 2013, 'US.Vcm_int'] <- NA
+ET_daily <- ET_daily[, keep]
+ET_daily <- rename_vars(ET_daily)
+
 # Precip data
 fname <- paste( proc_path, 'daily_precip.csv', sep='')
 P_daily <- read.csv(fname, na.strings=c("NA","NaN", " "))
 #keep <- c("season", "year_w", "US.Vcm", "US.Vcp", "US.Mpj", "US.Wjs",
 #          "US.Ses", "US.Seg")
-keep <- c("season", "year_w", "US.Vcm_gauge", "US.Vcp_gauge", "US.Mpj_gauge",
-          "US.Wjs_gauge","US.Ses_gauge", "US.Seg_gauge")
+keep <- c("season", "year_w", "Vcm_gauge", "Vcp_gauge", "Mpj_gauge",
+          "Wjs_gauge","Ses_gauge", "Seg_gauge")
 P_daily <- subset(P_daily, subset = (year_w > 2007))
 P_gauge_daily <- P_daily[, keep]
 P_gauge_daily <- rename_vars(P_gauge_daily)
 
 
-keep <- c("season", "year_w", "US.Vcm_PRISM", "US.Vcp_PRISM", "US.Mpj_PRISM",
-          "US.Wjs_PRISM","US.Ses_PRISM", "US.Seg_PRISM")
+keep <- c("season", "year_w", "Vcm_PRISM", "Vcp_PRISM", "Mpj_PRISM",
+          "Wjs_PRISM","Ses_PRISM", "Seg_PRISM")
 P_PRISM_daily <- P_daily[, keep]
 P_PRISM_daily <- rename_vars(P_PRISM_daily)
 

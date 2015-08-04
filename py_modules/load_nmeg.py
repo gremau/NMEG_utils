@@ -142,44 +142,6 @@ def get_multiyr_aflx( site, afpath,
     return site_df
 
 
-def get_multisite_aflx_var( varname, sites, afpath,
-                            startyear=now.year - 1, endyear=now.year - 1,
-                            gapfilled=True ):
-    """
-    Load ameriflux files for a list of sites, append them, select out a
-    desired variable and then return a pandas DataFrame object of one AF
-    variable with columns for each site in list from startyear to endyear.
-
-    Args:
-        varname     : Desired Ameriflux variable
-        sites       : List of site names ( Ameriflux style )
-        afpath      : Path to directory of ameriflux files
-        startyear   : First year of data to include
-        endyear     : Last year of data to include
-        gapfilled   : Boolean, true=with_gaps, false=gapfilled files parsed
-
-    Return:
-        site_df     : pandas DataFrame containing multiple years of AF data
-                      from one site
-    """
-    
-    # Create empty dataframe spanning startyear to endyear
-    # Will contain the multi-year column for each site
-    newidx = pd.date_range(str(startyear) + '-01-01',
-                           str(endyear + 1) + '-01-01', freq = '30T')
-    df = pd.DataFrame(index = newidx)
-    
-    # List AF site names in same order
-    siteNames = sites
-    for i, site in enumerate(siteNames):
-        # Get the multi-year Ameriflux data for the site
-        site_df = get_multiyr_aflx( site, afpath, startyear, endyear, 
-                                    gapfilled )
-        df[ site ] = site_df[ varname ]
-
-    return df
-
-
 def load_fluxall_file( fname, year ) :
     """
     Load a specified fluxall file and return a pandas DataFrame object.
