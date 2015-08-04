@@ -10,6 +10,7 @@ import numpy as np
 import datetime as dt
 import pandas as pd
 import os
+import pdb as pdb
 
 now = dt.datetime.now()
 
@@ -177,6 +178,105 @@ def get_multisite_aflx_var( varname, sites, afpath,
         df[ site ] = site_df[ varname ]
 
     return df
+
+
+def load_fluxall_file( fname, year ) :
+    """
+    Load a specified fluxall file and return a pandas DataFrame object.
+    DataFrame has a datetime index and has been reindexed to include all
+    30 minute periods in one year.
+
+    Args:
+        fname (str) : path and filename of desired file
+        year (int)  : year of file
+
+    Return:
+        parsed_df   : pandas DataFrame    
+    """
+    def dparser( y, m, d, H, M, S ):
+        yr = int( y )
+        mon = int( m )
+        day = int( d )
+        hr = int( H )
+        mn =  int( M )
+        sec = int( S )
+        
+        return ( dt.datetime( yr, mon, day, hr, mn, sec ))
+    
+    print('Parsing ' + fname)
+
+    # Use date parser above
+    parsed_df =  pd.read_csv(fname, delimiter='\t',
+                parse_dates={'tstamp':[0, 1, 2, 3, 4, 5]},
+                date_parser=dparser, index_col='tstamp')
+
+
+    # We will reindex to include every 30-min period during the given year,
+    # from YR-01-01 00:30 to YR+1-01-01 00:00
+    full_idx = pd.date_range( str( year ) + '-01-01 00:30:00',
+            str( year + 1 ) + '-01-01 00:00:00', freq = '30T')
+
+    # Remove irregular data and reindex dataframes
+    idxyrs = parsed_df.index.year > 2005;
+    parsed_df = parsed_df.iloc[ idxyrs, : ]
+    if len( parsed_df.index ) < len( full_idx ):
+        print( "WARNING: some observations may be missing!" )
+    
+    parsed_df = parsed_df.reindex( full_idx )
+    
+    return parsed_df
+
+
+def get_multiyr_fluxall( site, base_path,
+                      startyear=now.year - 1, endyear=now.year - 1 ) :
+    """
+    Load a list of 1-year fluxall files, append them, and then return
+    a pandas DataFrame object of fluxall data from startyear to endyear.
+
+    Args:
+        site        : Site name ( NMEG style )
+        base_path   : Path to base directory of fluxall files (subdir for sites)
+        startyear   : First year of data to include
+        endyear     : Last year of data to include
+
+    Return:
+        site_df     : pandas DataFrame containing multiple years of data
+                      from one site
+    """
+    dpath = base_path + site + '/'
+  
+    # Create empty dataframe spanning all days in  startyear to endyear
+    newidx = pd.date_range( str( startyear ) + '-01-01 00:30:00',
+            str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
+    df = pd.DataFrame( index = newidx )
+
+# Get a list of filenames in the directory
+    file_list = os.listdir( dpath )
+
+    # Select desired files from file_list (by site and filetype)
+    site_file_list = [ s for s in file_list if site in s ]
+    site_file_list = [ s for s in site_file_list if 'fluxall' in s ]
+    # Initialize DataFrame
+    site_df = pd.DataFrame()
+    # Loop through each year and fill the dataframe
+    for j in range(startyear, endyear + 1):
+        fName = '{0}_{1}_fluxall.txt'.format( site, j )
+        # If theres is a file for that year, load it
+        if fName in site_file_list:
+            # Call load_fluxall_file
+            year_df = load_fluxall_file( dpath + fName, j )
+            # And append to site_df
+            site_df = site_df.append( year_df )
+        else:
+            print( 'WARNING: ' + fName + ' is missing')
+
+    # Now standardize the time period and index of site_df and put
+    # multiyear site flux values in measurement-specific dataframe
+    idxyrs = site_df.index.year > startyear - 1;
+    site_df = site_df.iloc[ idxyrs, : ]
+    site_df = site_df.reindex( newidx )
+
+    return site_df
 
 
 def loadPRISMfile(fname) :
