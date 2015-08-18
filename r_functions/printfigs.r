@@ -1,4 +1,4 @@
-printfigs <- function(fig, filename, w, h, multi=0) {
+printfigs <- function(fig, filename, basepath, w, h, multi=0) {
   # pass a figure or list of figures
   # if multi is greater than 0, it will treat a list of figures as a multiplot
   # Prints to two locations.
@@ -14,7 +14,7 @@ printfigs <- function(fig, filename, w, h, multi=0) {
   if (class(fig)[[1]]=="list") {
     if (multi==0) {
       for (i in figlist) {
-        device(paste("../figures/", filename[[i]], sep=""),
+        device(paste(basepath, filename[[i]], sep=""),
                    onefile=FALSE,
                    width=w, height=h, bg='white', pointsize=14)
         print(fig[[i]])
@@ -29,7 +29,7 @@ printfigs <- function(fig, filename, w, h, multi=0) {
     }
     # If fig is a list, multiplot IS requested, make it and print it
     else if (multi>0){
-      device(paste("../figures/", filename, sep=""),
+      device(paste(basepath, filename, sep=""),
                  onefile=FALSE,
                  width=w, height=h, bg='white', pointsize=14)
       multiplot(plotlist=fig, cols=multi)
@@ -45,7 +45,7 @@ printfigs <- function(fig, filename, w, h, multi=0) {
 
   # Otherwise just print it
   else {
-    device(paste("../figures/", filename, sep=""),
+    device(paste(basepath, filename, sep=""),
                onefile=FALSE,
                width=w, height=h, bg='white')
     print(fig)

@@ -55,7 +55,7 @@ def sum_30min_et( df, t_air ) :
 def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ], 
         le_flux=[ 'LE_F' ], avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET' ],
         minmax_cols=[ 'TA_F', 'VPD_F' ],
-        precip_col='P_F' , tair_col='TA_F' ):
+        sum_cols=[ 'P_F' ] , tair_col='TA_F' ):
     """
     Integrate 30 minute flux data into a daily (or longer) frequency file. C
     fluxes are converted from molar to mass flux and summed. Latent heat    
@@ -69,7 +69,7 @@ def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
         le_flux     : latent heat flux header name(s)
         avg_cols    : list of header names (strings) to average
         minmax_cols : list of header names (strings) to convert to min/max
-        precip_col  : precip header (string) - gets summed
+        sum_cols    : list of header names (strings) to sum
         tair_col    : air temperature header (string) used for ET calculation
 
     Return:
@@ -83,7 +83,7 @@ def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
     et_flux_sum = sum_30min_et( df[ le_flux ], df[ tair_col ] )
 
     # Subset site data into summable and averagable data
-    df_sum = pd.concat( [ c_flux_sums, et_flux_sum, df[ precip_col ]], 
+    df_sum = pd.concat( [ c_flux_sums, et_flux_sum, df[ sum_cols ]], 
                           axis=1 );
     df_avg = df[ avg_cols ]
     df_min = df[ minmax_cols ]
