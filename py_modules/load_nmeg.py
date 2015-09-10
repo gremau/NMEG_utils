@@ -84,6 +84,47 @@ def load_aflx_file( fname, year, old_date_parse=False ) :
     return parsed_df
 
 
+def load_daily_aflx_file( fname ) :
+    """
+    Load a specified DAILY ameriflux file and return a pandas DataFrame
+    object. DataFrame has a datetime index and has been reindexed to include
+    all days in one year.
+
+    Args:
+        fname (str) : path and filename of desired AF file
+        year (int)  : year of ameriflux file
+ 
+    Return:
+        parsed_df   : pandas DataFrame    
+    """
+    # a date parser for older AF files (2007-2008)
+    def dparse1( yr, doy ):       
+        yr = int( yr )
+        doy = int( doy )
+        return ( dt.datetime( yr - 1, 12, 31 ) + 
+                dt.timedelta( days=doy, hours=0, minutes=0))
+        
+    print('Parsing ' + fname)
+    # Parse data file 
+    parsed_df =  pd.read_csv( fname, skiprows=(1,), header=0, delimiter='\t',
+            parse_dates={ 'Date': [0, 1] }, date_parser=dparse1,
+            na_values='-9999', index_col='Date' )
+
+
+    # We will reindex to include every 30-min period during the given year,
+    # from YR-01-01 00:30 to YR+1-01-01 00:00
+    full_idx = pd.date_range( '2007-01-01', '2015-01-01', freq = '1D')
+
+    # Remove irregular data and reindex dataframes
+    idxyrs = parsed_df.index.year > 2005;
+    parsed_df = parsed_df.iloc[ idxyrs, : ]
+    if len( parsed_df.index ) < len( full_idx ):
+        print( "WARNING: some observations may be missing!" )
+    
+    parsed_df = parsed_df.reindex( full_idx )
+    
+    return parsed_df
+
 def get_multiyr_aflx( site, afpath,
                       startyear=now.year - 1, endyear=now.year - 1,
                       gapfilled=True) :
