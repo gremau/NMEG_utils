@@ -127,7 +127,7 @@ def load_daily_aflx_file( fname ) :
 
 def get_multiyr_aflx( site, afpath,
                       startyear=now.year - 1, endyear=now.year - 1,
-                      gapfilled=True) :
+                      gapfilled=True, old_dparse=False ) :
     """
     Load a list of 1-year ameriflux files, append them, and then return
     a pandas DataFrame object of AF data from startyear to endyear.
@@ -138,6 +138,7 @@ def get_multiyr_aflx( site, afpath,
         startyear   : First year of data to include
         endyear     : Last year of data to include
         gapfilled   : Boolean, true=with_gaps, false=gapfilled files parsed
+        old_dparse  : Boolean, true=use old AF date parsing, false=new parsing
 
     Return:
         site_df     : pandas DataFrame containing multiple years of AF data
@@ -168,7 +169,8 @@ def get_multiyr_aflx( site, afpath,
         # If theres is a file for that year, load it
         if fName in site_file_list:
             # Call load_aflx_file
-            year_df = load_aflx_file( afpath + fName, j )
+            year_df = load_aflx_file( afpath + fName, j, 
+                    old_date_parse=old_dparse )
             # And append to site_df
             site_df = site_df.append( year_df )
         else:
