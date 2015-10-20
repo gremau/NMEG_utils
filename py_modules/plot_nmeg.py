@@ -27,7 +27,7 @@ def plot_tseries( dict_in, varname, texty, fighandle, ylab,
         xlims=[ dt.datetime( 2007, 1, 1 ), dt.datetime( 2014, 12, 31 )],
         ylims=None, sitelist=sites, sitenames=names,
         colors=palette):
-    ax = list();
+    ax = list()
     for i, site in enumerate(sitelist):
         # Pull out x and y axes
         idx = dict_in[site].index

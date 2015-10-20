@@ -8,6 +8,7 @@ Functions for conversions and transforms of NMEG data
 #import ipdb as ipdb
 import datetime as dt
 import pandas as pd
+import numpy as np
 
 now = dt.datetime.now()
 
@@ -32,7 +33,8 @@ def sum_30min_c_flux( df ) :
 def sum_30min_et( df, t_air ) :
     """
     Convert 30min latent heat flux to ET ( W/m^2 to mm/s ) and sum (integrate) 
-    for each 30min period. 
+    for each 30min period. Note that this method sums the full day of ET,
+    rather than just daytime values (see get_daytime_et function below).
 
     see http://bwc.berkeley.edu/Amflux/equations/Gretchen-latent-heat-flux.htm
 
@@ -44,12 +46,55 @@ def sum_30min_et( df, t_air ) :
     lmbda = ( 2.501 - 0.00236 * t_air ) * 1000
     # For each input column create a new header and convert values to ET
     for i, cname in enumerate( df.columns ) :
-        export_cname = 'ET_mm_int_' + str( i )
+        export_cname = 'ET_mm_fullday_' + str( i )
         et_mms = ( 1 / ( lmbda * 1000 )) * df_int[ cname ]
         et_mm_int = et_mms * 1800
         df_int[ export_cname ] = et_mm_int
 
     return df_int[ export_cname ]
+
+
+def get_daytime_et( df, freq='1D',
+        le_col='LE_F', tair_col='TA_F', sw_col='SW_IN_F'):
+    """
+    # THIS IS THE NEW METHOD
+    Integrate 30 minute ET data into a daily (or longer) frequency file.
+    Latent heat flux is converted to ET using daily mean LE from
+    DAYTIME ONLY values.
+    
+    Args:
+        df          : pandas DataFrame object (hourly - usually from AF file)
+        freq        : frequency to resample to (default daily)
+        le_col      : latent heat flux header name(s)
+        tair_col    : air temperature header (string) used for ET calculation
+        swin_col    : incoming shortwave header (string) to determine daytime
+
+    Return:
+        df_le_daily   : pandas dataframe with ET data at new frequency
+
+    """
+
+    # Make a subset dataframe with LE and Tair
+    df_le = df[[le_col, tair_col]].copy()
+    # Make a column to indicate daytime periods
+    df_le['daytime_obs'] = 0
+    # Mark daytime observations and nightime LE/Tair to NaN
+    daytest = df['SW_IN_F'] > 5
+    df_le.loc[daytest, 'daytime_obs'] = 1
+    df_le.loc[~daytest, [le_col,tair_col]] = np.nan
+
+    # Calculate mean daily LE and Tair
+    df_le_daily = df_le.resample( freq, how='mean')
+    # Sum the number of daytime observations
+    df_le_daily['daytime_obs'] = df_le.daytime_obs.resample( freq, how='sum')
+    # Calculate the lambda value for each day
+    df_le_daily['lmbda'] = ( 2.501 - 0.00236 * df_le_daily[tair_col] ) * 1000
+    # Calculate ET ( meand daily LE / (1000*lambda) * # daytime seconds
+    df_le_daily['ET_mm_daytime'] = ( ( 1 / ( df_le_daily.lmbda * 1000 )) * 
+            df_le_daily[ le_col ] * (df_le_daily.daytime_obs * 1800) )
+    
+
+    return df_le_daily
 
 
 def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ], 
