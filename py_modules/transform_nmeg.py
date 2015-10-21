@@ -32,13 +32,12 @@ def sum_30min_c_flux( df ) :
 
 def sum_30min_et( df, t_air ) :
     """
+    THIS IS AN OUTDATED METHOD
     Convert 30min latent heat flux to ET ( W/m^2 to mm/s ) and sum (integrate) 
     for each 30min period. Note that this method sums the full day of ET,
     rather than just daytime values (see get_daytime_et function below).
 
     see http://bwc.berkeley.edu/Amflux/equations/Gretchen-latent-heat-flux.htm
-
-    Should we sum this for the entire day or for only daytime hours?
     """
 
     df_int = df.copy()
@@ -54,13 +53,17 @@ def sum_30min_et( df, t_air ) :
     return df_int[ export_cname ]
 
 
-def get_daytime_et( df, freq='1D',
-        le_col='LE_F', tair_col='TA_F', sw_col='SW_IN_F'):
+def get_daytime_et_pet( df, freq='1D',
+        le_col='LE_F', tair_col='TA_F', sw_col='SW_IN_F', h_col='H_F'):
     """
-    # THIS IS THE NEW METHOD
     Integrate 30 minute ET data into a daily (or longer) frequency file.
     Latent heat flux is converted to ET using daily mean LE from
-    DAYTIME ONLY values.
+    DAYTIME ONLY values. This is a pretty sensible way to do it and compares
+    well with what Laura Morillas has done in the past (see email corresp.)
+
+    Also see:
+    http://bwc.berkeley.edu/Amflux/equations/Gretchen-latent-heat-flux.htm
+
     
     Args:
         df          : pandas DataFrame object (hourly - usually from AF file)
@@ -68,14 +71,14 @@ def get_daytime_et( df, freq='1D',
         le_col      : latent heat flux header name(s)
         tair_col    : air temperature header (string) used for ET calculation
         swin_col    : incoming shortwave header (string) to determine daytime
+        h_col       : sensible heat flux header name (string)
 
     Return:
-        df_le_daily   : pandas dataframe with ET data at new frequency
-
+        df_le_daily   : pandas dataframe with ET & PET data at new frequency
     """
 
     # Make a subset dataframe with LE and Tair
-    df_le = df[[le_col, tair_col]].copy()
+    df_le = df[[le_col, tair_col, h_col]].copy()
     # Make a column to indicate daytime periods
     df_le['daytime_obs'] = 0
     # Mark daytime observations and nightime LE/Tair to NaN
@@ -89,10 +92,30 @@ def get_daytime_et( df, freq='1D',
     df_le_daily['daytime_obs'] = df_le.daytime_obs.resample( freq, how='sum')
     # Calculate the lambda value for each day
     df_le_daily['lmbda'] = ( 2.501 - 0.00236 * df_le_daily[tair_col] ) * 1000
-    # Calculate ET ( meand daily LE / (1000*lambda) * # daytime seconds
+    # Calculate ET ( mean daily LE / (1000*lambda) * # daytime seconds
     df_le_daily['ET_mm_daytime'] = ( ( 1 / ( df_le_daily.lmbda * 1000 )) * 
             df_le_daily[ le_col ] * (df_le_daily.daytime_obs * 1800) )
+
+    # Now calculate PET
+    alphaPT = 1.26
+    # Saturation vapor pressure temp curve (Tetens, 1930)
+    slopeSAT = (
+            (2508.3 / (df_le_daily[tair_col].values + 237.3)**2) * 
+            np.exp(17.3 * df_le_daily[tair_col].values / 
+                (df_le_daily[tair_col].values + 237.3))
+            )
     
+    # Psychometric constant (kPa / degC)
+    PSI = 0.066
+
+    # LE potential and ET potential (from Priestly-Taylor).
+    # Note here, Rn-G is substituted with H + LE
+    LEpot = alphaPT *(slopeSAT * (df_le_daily[ h_col ] + 
+        df_le_daily[ le_col ]) / (slopeSAT + PSI))
+    
+    df_le_daily['PET_mm_daytime'] = (
+            LEpot * 1800 * df_le_daily.daytime_obs / 
+            (1000 * df_le_daily['lmbda']))
 
     return df_le_daily
 
@@ -119,7 +142,6 @@ def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
 
     Return:
         df_resamp   : pandas dataframe with AF data at new frequency
-
     """
 
     # Calculate integrated c fluxes
