@@ -9,6 +9,7 @@ proc_path <- 'processed_data/'
 
 library(plyr)
 library(reshape2)
+library(xts)
 
 # Function for renaming sites
 rename_vars <- function(df) {
@@ -79,10 +80,31 @@ get_multiyr_aflx <- function( site, afpath,
     return( my_df )
 }
 
-get_daily_file <- function( site, dlypath, make_new=FALSE ){
+# Load shared daily file for a site from NMEG_utils. If asked, this script will
+# call the python script that makes these files.
+get_daily_file <- function( site, make_new=FALSE ){
     if (make_new==TRUE){
-        system('python ../py_modules/export_daily_files.py')
+        system('python ~/current/NMEG_utils/py_modules/export_daily_files.py')
     }
+    # The daily files are put here:
+    dlypath <- '~/current/NMEG_utils/processed_data/'
     filenames <- list.files(dlypath, full.names=TRUE)
+    filenames <- filenames[grepl(paste(site, '_daily', sep=''), filenames)]
+    df <- read.csv(filenames, header=TRUE)
+    # Remove last row (2015 data containing NAs)
+    df <- df[1:nrow(df)-1,]
+    return(df)
+}
+
+# Convert daily dataframe into a time series (xts) object
+daily_to_xts <- function( df ){
+    # Get time column (should be $X)
+    df_t <- as.Date(df$X)
+    # Separate into numeric columns 
+    df_num <- df[,2:ncol(df)]
+    # Convert to xt
+    df_xts <- xts(df_num, df_t)
+
+    return(df_xts)
 }
 
