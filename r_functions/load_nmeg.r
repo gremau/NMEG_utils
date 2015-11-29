@@ -5,10 +5,7 @@
 
 #setwd('~/current/NMEG_fluxdata/data_analysis/R/')
 
-proc_path <- 'processed_data/'
-
 library(plyr)
-library(reshape2)
 library(xts)
 
 # Function for renaming sites
