@@ -14,7 +14,7 @@ to run the script do 'activate py33'
 def getPrecipData(year, data_path):
     # Read in site coordinates, get date range and create a DataFrame
     #to fill
-    pnts = pd.read_csv('site_coords.txt')
+    pnts = pd.read_csv('../site_coords.txt')
     drange =  pd.date_range('1,1,{0}'.format(year),
             '12,31,{0}'.format(year), freq='D')
     df = pd.DataFrame(index=drange, columns=pnts.sitecode)
@@ -29,7 +29,7 @@ def getPrecipData(year, data_path):
         # bil_file = (r'/vsizip/PRISM_daily/' +
         #r'PRISM_ppt_stable_4kmD1_{0}0101_{0}1231_bil.zip/'.format(year) +
         #r'PRISM_ppt_stable_4kmD1_{0}{1}{2}_bil.bil'.format(*ymd_tuple))
-        bil_file = (data_path + r'/raw_bil/' +
+        bil_file = (data_path  +
             r'PRISM_ppt_stable_4kmD2_{0}0101_{0}1231_bil/'.format(*ymd_tuple) +
             r'PRISM_ppt_stable_4kmD2_{0}{1}{2}_bil.bil'.format(*ymd_tuple))
         bil_ds = bf.BilFile(bil_file)
@@ -42,10 +42,10 @@ def getPrecipData(year, data_path):
 # date range if doing an incomplete year dataset
 # (current year to 6 months after)
 years = list(range(2015, 2016))
-path = r'C:\\Research_Flux_Towers\\AncillaryData\\MetData\\PRISM_daily'
+path = r'~/Desktop/'
 make_plot=False
 for i in years:
-    a = getPrecipData(i, path + r'\\raw_bil')
+    a = getPrecipData(i, path + r'bil/')
     if make_plot:
         a.plot()
         plt.show()
