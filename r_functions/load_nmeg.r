@@ -86,7 +86,7 @@ get_daily_file <- function( site, make_new=FALSE ){
     # The daily files are put here:
     dlypath <- '~/current/NMEG_utils/processed_data/'
     filenames <- list.files(dlypath, full.names=TRUE)
-    filenames <- filenames[grepl(paste(site, '_daily', sep=''), filenames)]
+    filenames <- filenames[grepl(paste(site, '_daily.csv', sep=''), filenames)]
     df <- read.csv(filenames, header=TRUE)
     # Remove last row (2015 data containing NAs)
     df <- df[1:nrow(df)-1,]
