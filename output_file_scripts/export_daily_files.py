@@ -3,14 +3,15 @@
     Combines several older scripts (MultiYearFluxes, MultiYearPrecip, etc)
 '''
 import sys
-
 # laptop
-sys.path.append( './' )
+sys.path.append( '/home/greg/current/NMEG_utils/py_modules/' )
+import load_nmeg as ld
+import transform_nmeg as tr
+
 af_path = '/home/greg/sftp/eddyflux/Ameriflux_files/provisional/'
 outpath = '/home/greg/current/NMEG_utils/processed_data/'
 
-import load_nmeg as ld
-import transform_nmeg as tr
+
 
 # Years to load
 startyr = 2007

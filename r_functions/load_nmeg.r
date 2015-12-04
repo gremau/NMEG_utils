@@ -3,29 +3,7 @@
 #
 # Greg Maurer - Nov 23, 2014
 
-#setwd('~/current/NMEG_fluxdata/data_analysis/R/')
-
-library(plyr)
 library(xts)
-
-# Function for renaming sites
-rename_vars <- function(df) {
-  colnames(df)[grep('US.Vcm', colnames(df))] <- 'Mixed conifer'
-  colnames(df)[grep('US.Vcp', colnames(df))] <- 'Ponderosa pine'
-  colnames(df)[grep('US.Wjs', colnames(df))] <- 'Juniper savannah'
-  colnames(df)[grep('US.Mpj', colnames(df))] <- 'PJ woodland'
-  colnames(df)[grep('US.Ses', colnames(df))] <- 'Shrubland'
-  colnames(df)[grep('US.Seg', colnames(df))] <- 'Grassland'
-  
-  df$season <- revalue(df$season, c("cold"="Cold",
-                            "monsoon"="Monsoon",
-                            "spring"="Spring"))
-  
-  reorder <- c('Cold', 'Spring', 'Monsoon')
-  df$season <- factor(df$season, levels=reorder)
-  
-  return(df)
-}
 
 # Function to load one 30 minute ameriflux file
 # Roughly equivalent to the similarly named python function in 
@@ -81,7 +59,7 @@ get_multiyr_aflx <- function( site, afpath,
 # call the python script that makes these files.
 get_daily_file <- function( site, make_new=FALSE ){
     if (make_new==TRUE){
-        system('python ~/current/NMEG_utils/py_modules/export_daily_files.py')
+        system('python ~/current/NMEG_utils/output_file_scripts/export_daily_files.py')
     }
     # The daily files are put here:
     dlypath <- '~/current/NMEG_utils/processed_data/'
