@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pdb as pdb
+import datetime as dt
 
 
 # Years to load
@@ -88,7 +89,7 @@ monthly = { x :
          for x in hourly.keys() }
 
 # Now add some calculated values and SPEI to the monthly data
-spei_path = '../../NMEG_utils/processed_data/'
+spei_path = '../processed_data/spei/'
 
 for site in sites:
     # First remove some columns from monthly dataframe
@@ -125,6 +126,15 @@ for site in sites:
     # Join the two files on the date index
     monthly_join = pd.concat([monthly[site], spei], axis=1)
 
-    monthly_join.to_csv('../processed_data/monthly_spei_flux_' + site + '.csv',
-        na_rep='NA')
-
+   # monthly_join.to_csv('../processed_data/monthly_spei_flux_' + site + '.csv',
+   #     na_rep='NA')
+   
+    # Write file
+    meta_data = pd.Series([('site: {0}'.format(site)),
+        ('date generated: {0}'.format(str(dt.datetime.now()))),
+        ('script: monthly_spei_flux_files.py'),('--------')])
+    with open('../processed_data/monthly_spei_flux_' + site + '.csv',
+            'w') as fout:
+        fout.write('---file metadata---\n')
+        meta_data.to_csv(fout, index=False)
+        monthly_join.to_csv(fout, na_rep='NA')
