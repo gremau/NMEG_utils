@@ -9,7 +9,7 @@ import load_nmeg as ld
 import transform_nmeg as tr
 
 af_path = '/home/greg/sftp/eddyflux/Ameriflux_files/provisional/'
-outpath = '/home/greg/current/NMEG_utils/processed_data/'
+outpath = '/home/greg/current/NMEG_utils/processed_data/dailyfiles/'
 
 
 

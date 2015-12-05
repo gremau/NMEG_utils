@@ -62,7 +62,7 @@ get_daily_file <- function( site, make_new=FALSE ){
         system('python ~/current/NMEG_utils/output_file_scripts/export_daily_files.py')
     }
     # The daily files are put here:
-    dlypath <- '~/current/NMEG_utils/processed_data/'
+    dlypath <- '~/current/NMEG_utils/processed_data/dailyfiles/'
     filenames <- list.files(dlypath, full.names=TRUE)
     filenames <- filenames[grepl(paste(site, '_daily.csv', sep=''), filenames)]
     df <- read.csv(filenames, header=TRUE)
