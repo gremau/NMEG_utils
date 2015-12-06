@@ -176,8 +176,7 @@ def get_multiyr_aflx( site, afpath,
         else:
             print( 'WARNING: ' + fName + ' is missing')
 
-    # Now standardize the time period and index of site_df and put
-    # multiyear site flux values in measurement-specific dataframe
+    # Now standardize the time period and index of site_df
     idxyrs = site_df.index.year > startyear - 1;
     site_df = site_df.iloc[ idxyrs, : ]
     site_df = site_df.reindex( newidx )
@@ -255,7 +254,7 @@ def get_multiyr_fluxall( site, base_path,
             str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
     df = pd.DataFrame( index = newidx )
 
-# Get a list of filenames in the directory
+    # Get a list of filenames in the directory
     file_list = os.listdir( dpath )
 
     # Select desired files from file_list (by site and filetype)
@@ -277,6 +276,88 @@ def get_multiyr_fluxall( site, base_path,
 
     # Now standardize the time period and index of site_df and put
     # multiyear site flux values in measurement-specific dataframe
+    idxyrs = site_df.index.year > startyear - 1;
+    site_df = site_df.iloc[ idxyrs, : ]
+    site_df = site_df.reindex( newidx )
+
+    return site_df
+
+
+def load_soilmet_qc(fname):
+    """
+    Load a specified soilmet file and return a pandas DataFrame object.
+    DataFrame has a datetime index
+    Args:
+        fname (str) : path and filename of desired file
+        year (int)  : year of file
+
+    Return:
+        parsed_df   : pandas DataFrame 
+    """
+    def dparser( y, m, d, H, M, S ):
+        yr = int( y )
+        mon = int( m )
+        day = int( d )
+        hr = int( H )
+        mn =  int( M )
+        sec = int( S )
+        return ( dt.datetime( yr, mon, day, hr, mn, sec ))
+
+
+    soilmet_df = pd.read_csv(fname, delimiter=',', 
+                parse_dates={'tstamp':[0, 1, 2, 3, 4, 5]},
+                date_parser=dparser, index_col='tstamp')
+
+    return(soilmet_df)
+
+
+def get_multiyr_soilmet(site, base_path, ext='qc',
+        startyear=now.year - 1, endyear=now.year ) :
+    """
+    Load a list of 1-year soilmet files, append them, and then return
+    a pandas DataFrame object of soilmet data from startyear to endyear.
+
+    Args:
+        site        : Site name ( NMEG style )
+        base_path   : Path to base directory of fluxall files (subdir for sites)
+        ext         : File type ('qc', 'qc_rbd', or 'qc_rbd_gf')
+        startyear   : First year of data to include
+        endyear     : Last year of data to include
+
+    Return:
+        site_df     : pandas DataFrame containing multiple years of data
+                      from one site
+    """
+
+    # dpath = base_path + site + '/'
+    # Create empty dataframe spanning all days in  startyear to endyear
+    newidx = pd.date_range( str( startyear ) + '-01-01 00:30:00',
+            str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
+    df = pd.DataFrame( index = newidx )
+
+    # Get a list of filenames in the directory
+    file_list = os.listdir( base_path )
+
+    # Select desired files from file_list (by site and filetype)
+    site_file_list = [ s for s in file_list if site in s ]
+    filetype = 'soilmet_' + ext # qc, qc_rbd, or qc_rbd_gf
+    site_file_list = [ s for s in site_file_list if filetype in s ]
+
+    # Initialize DataFrame
+    site_df = pd.DataFrame()
+    # Loop through each year and fill the dataframe
+    for j in range(startyear, endyear + 1):
+        fName = '{0}_{1}_soilmet_{2}.txt'.format( site, j, ext )
+        # If theres is a file for that year, load it
+        if fName in site_file_list:
+            # Call load_soilmet_file
+            year_df = load_soilmet_qc( base_path + fName )
+            # And append to site_df
+            site_df = site_df.append( year_df )
+        else:
+            print( 'WARNING: ' + fName + ' is missing')
+
+    # Now standardize the time period and index of site_df
     idxyrs = site_df.index.year > startyear - 1;
     site_df = site_df.iloc[ idxyrs, : ]
     site_df = site_df.reindex( newidx )
