@@ -13,9 +13,7 @@ import load_nmeg as ld
 import transform_nmeg as tr
 
 af_path = '/home/greg/sftp/eddyflux/Ameriflux_files/provisional/'
-outpath = '/home/greg/current/NMEG_utils/processed_data/dailyfiles/'
-
-
+outpath = '/home/greg/current/NMEG_utils/processed_data/daily_aflx/'
 
 # Years to load
 startyr = 2007
@@ -48,5 +46,5 @@ for i, site in enumerate(sites):
     daily[site][ 'PET_F_mm_daytime'] = daily_et_pet.PET_mm_daytime
 
 # Write files to outpath
-{ x : daily[x].to_csv(outpath + 'US-' +x + '_daily.csv') for x in sites}
+{ x : daily[x].to_csv(outpath + 'US-' +x + '_daily_aflx.csv') for x in sites}
 

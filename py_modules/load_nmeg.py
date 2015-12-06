@@ -153,7 +153,6 @@ def get_multiyr_aflx( site, afpath,
     # Create empty dataframe spanning all days in  startyear to endyear
     newidx = pd.date_range( str( startyear ) + '-01-01 00:30:00',
             str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
-    df = pd.DataFrame( index = newidx )
     
     # Get a list of filenames in the directory
     file_list = os.listdir( afpath )
@@ -172,7 +171,7 @@ def get_multiyr_aflx( site, afpath,
             year_df = load_aflx_file( afpath + fName, j, 
                     old_date_parse=old_dparse )
             # And append to site_df
-            site_df = site_df.append( year_df )
+            site_df = site_df.append( year_df, verify_integrity=True  )
         else:
             print( 'WARNING: ' + fName + ' is missing')
 
@@ -270,7 +269,7 @@ def get_multiyr_fluxall( site, base_path,
             # Call load_fluxall_file
             year_df = load_fluxall_file( dpath + fName, j )
             # And append to site_df
-            site_df = site_df.append( year_df )
+            site_df = site_df.append( year_df, verify_integrity=True  )
         else:
             print( 'WARNING: ' + fName + ' is missing')
 
@@ -333,7 +332,6 @@ def get_multiyr_soilmet(site, base_path, ext='qc',
     # Create empty dataframe spanning all days in  startyear to endyear
     newidx = pd.date_range( str( startyear ) + '-01-01 00:30:00',
             str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
-    df = pd.DataFrame( index = newidx )
 
     # Get a list of filenames in the directory
     file_list = os.listdir( base_path )
@@ -353,7 +351,7 @@ def get_multiyr_soilmet(site, base_path, ext='qc',
             # Call load_soilmet_file
             year_df = load_soilmet_qc( base_path + fName )
             # And append to site_df
-            site_df = site_df.append( year_df )
+            site_df = site_df.append( year_df, verify_integrity=True )
         else:
             print( 'WARNING: ' + fName + ' is missing')
 

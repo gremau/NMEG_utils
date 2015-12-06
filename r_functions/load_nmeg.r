@@ -54,23 +54,6 @@ get_multiyr_aflx <- function( site, afpath,
     return( my_df )
 }
 
-# Load shared daily file for a site from NMEG_utils. If asked, this script will
-# call the python script that makes these files.
-get_daily_aflx <- function( site, make_new=FALSE ){
-    if (make_new==TRUE){
-        system('python ~/current/NMEG_utils/output_file_scripts
-               /export_daily_aflx.py')
-    }
-    # The daily files are put here:
-    dlypath <- '~/current/NMEG_utils/processed_data/dailyfiles/'
-    filenames <- list.files(dlypath, full.names=TRUE)
-    filenames <- filenames[grepl(paste(site, '_daily.csv', sep=''), filenames)]
-    df <- read.csv(filenames, header=TRUE)
-    # Remove last row (2015 data containing NAs)
-    df <- df[1:nrow(df)-1,]
-    return(df)
-}
-
 
 # Function to load one 30 minute soilmet file
 # Roughly equivalent to the similarly named python function in 
@@ -116,6 +99,29 @@ get_multiyr_soilmet <- function( site, base_path, ext,
     my_df[,'date'] <- with(my_df, ISOdatetime(year, month, day, 
                                               hour, min, second))
     return( my_df )
+}
+
+# Load shared daily file for a site from NMEG_utils. If asked, this script
+# will call the python script that makes these files. Note that the python
+# script that makes these fills in missing columns, standardizes the time
+# period (2007-2014), reindexes the dataframe, and verifies the index. So,
+# there should be no missing/duplicated data columns or time periods.
+
+get_daily_file <- function( site, type, make_new=FALSE ){
+    if (make_new==TRUE){
+        system(paste('python ~/current/NMEG_utils/output_file_scripts/',
+                     'export_daily_', type, '.py', sep=''))
+    }
+    # The daily files are put here:
+    dlypath <- paste('~/current/NMEG_utils/processed_data/daily_', 
+                     type, sep='')
+    filenames <- list.files(dlypath, full.names=TRUE)
+    filenames <- filenames[grepl(paste(site, '_daily_', type, sep=''),
+                                 filenames)]
+    df <- read.csv(filenames, header=TRUE)
+    # Remove last row (2015 data containing NAs - added by python code)
+    df <- df[1:nrow(df)-1,]
+    return(df)
 }
 
 # Convert daily dataframe into a time series (xts) object
