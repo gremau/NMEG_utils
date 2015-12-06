@@ -340,7 +340,7 @@ def get_multiyr_soilmet(site, base_path, ext='qc',
 
     # Select desired files from file_list (by site and filetype)
     site_file_list = [ s for s in file_list if site in s ]
-    filetype = 'soilmet_' + ext # qc, qc_rbd, or qc_rbd_gf
+    filetype = ext + '.txt' # qc, qc_rbd, or qc_rbd_gf
     site_file_list = [ s for s in site_file_list if filetype in s ]
 
     # Initialize DataFrame

@@ -1,7 +1,11 @@
-'''
+"""
+    export_daily_aflx.py
+    --------------------
+    
     Script to create and export daily NMEG datasets for use in R (or elsewhere).
     Combines several older scripts (MultiYearFluxes, MultiYearPrecip, etc)
-'''
+
+"""
 import sys
 # laptop
 sys.path.append( '/home/greg/current/NMEG_utils/py_modules/' )
