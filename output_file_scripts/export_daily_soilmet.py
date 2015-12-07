@@ -33,7 +33,6 @@ hourly = { x :
             startyear=startyr, endyear=endyr) 
         for x in altsites }
 
-
 # Resample to daily means
 daily = { x : hourly[x].resample( '1D', how='mean' )
         for x in hourly.keys() }
@@ -42,47 +41,87 @@ daily = { x : hourly[x].resample( '1D', how='mean' )
 for i, asite in enumerate(altsites):
     daily[sites[i]] = daily.pop(asite)
 
-# Add a deep soil moisture column ( mean of all columns <= 20cm deep)
+# Add 3 soil moisture columns of different depth ranges
 # Also interpolate over missing values
+depth_rng = [list(range(0, 6)), list(range(6, 23)), list(range(23, 66))]
+depth_str = ['shall', 'mid', 'deep']
 
-for i, site in enumerate(sites):
-    cols = [s for s in daily[site].columns if 'SWC' in s
-            and 'tcor' not in s]
-    # Choose a range for deep sensors and extract deep sensor column names
-    deep = list(range(20,65))
-    deep = [str(i) for i in deep]
-    deep_cols = list()
-    for j in deep:
-        j_list = [m for m in cols if j in m]
-        deep_cols = j_list + deep_cols
+def get_depth_mean( df, var,  d_string, d_range ):
+    # Extract columns matching depth range
+    cols = [h for h in df.columns if var in h and 'tcor' not in h]
+    d_range = [str(i) for i in d_range] # Convert to string list
+    col_select = list()
+    for depth in d_range:
+        get_col = [k for k in cols if '_' + depth + 'p' in k 
+                or '_' + depth + '_' in k]
+        col_select = col_select + get_col
     
-    # Calculate a deep SWC mean and interpolate over gaps
-    daily[site]['deep_swc'] = daily[site][deep_cols].mean(axis=1, skipna=True)
-    # Remove some bad data
-    if site=='Seg':
-        daily[site].deep_swc[daily[site].index.year < 2010] = np.nan
-    if site=='Ses':
-        daily[site].deep_swc[daily[site].index==dt.datetime(2011, 5, 23)
-                ] = np.nan
-        idx = daily[site].index < dt.datetime(2011, 5, 23)
-        daily[site].deep_swc[idx] = daily[site].deep_swc[idx] - 0.04
-        
-    daily[site]['deep_swc_interp'] = daily[site].deep_swc.interpolate(
-            method='pchip')
-    daily[site].deep_swc.plot(title=site, legend=True)
-    daily[site].deep_swc_interp.plot(legend=True)
+    # Calculate depth range SWC mean
+    #pdb.set_trace()
+    df[d_string + '_swc'] = df[col_select].mean(axis=1, skipna=True)
+    
+    return(df)
+
+def get_depth_mean_interp( df, site ):
+    df['shall_swc_interp'] = df.shall_swc.interpolate(method='pchip')
+    df['mid_swc_interp'] = df.mid_swc.interpolate(method='pchip')
+    df['deep_swc_interp'] = df.deep_swc.interpolate(method='pchip')
+    df.shall_swc.plot(title=site, legend=True)
+    df.mid_swc.plot(title=site, legend=True)
+    df.deep_swc.plot(title=site, legend=True)
+    df.shall_swc_interp.plot(title=site, legend=True)
+    df.mid_swc_interp.plot(title=site, legend=True)
+    df.deep_swc_interp.plot(title=site, legend=True)
     plt.show()
 
+    return(df)
 
-# Add ET, PET and put into daily dataframes
-#for i, site in enumerate(sites):
-#    h = hourly[site]
-    # Calculate daily ET and PET (see NMEG_utils/py_modules/transform_nmeg 
-    # for documentation)
-#    daily_et_pet = tr.get_daytime_et_pet( h, freq='1D')
-#    daily[site][ 'ET_F_mm_daytime'] = daily_et_pet.ET_mm_daytime
-#    daily[site][ 'PET_F_mm_daytime'] = daily_et_pet.PET_mm_daytime
+# Append means for each depth range
+for i in range(0, 3):
+    daily = { x : get_depth_mean(daily[x], 'SWC', depth_str[i], depth_rng[i])
+        for x in daily.keys() }
+
+# Remove some bad data
+idx = daily['Seg'].index.year < 2010
+daily['Seg'].shall_swc[idx] = np.nan
+daily['Seg'].mid_swc[idx] = np.nan
+daily['Seg'].deep_swc[idx] = np.nan
+
+daily['Ses'].shall_swc[daily['Ses'].index==dt.datetime(2011, 5, 23)] = np.nan
+daily['Ses'].mid_swc[daily['Ses'].index==dt.datetime(2011, 5, 23)] = np.nan
+daily['Ses'].deep_swc[daily['Ses'].index==dt.datetime(2011, 5, 23)] = np.nan
+idx = daily['Ses'].index < dt.datetime(2011, 5, 23)
+daily['Ses'].shall_swc[idx] = daily['Ses'].shall_swc[idx] + 0.022
+daily['Ses'].mid_swc[idx] = daily['Ses'].mid_swc[idx] - 0.025
+daily['Ses'].deep_swc[idx] = daily['Ses'].deep_swc[idx] - 0.037
+
+# Append interpolated means for each depth range
+daily = { x : get_depth_mean_interp(daily[x], x) for x in daily.keys() }
 
 # Write files to outpath
 { x : daily[x].to_csv(outpath + 'US-' +x + '_daily_soilmet.csv') for x in sites}
+
+
+
+# For exporting monthly shallow, mid, and deep files
+#outpath = '/home/greg/current/NMEG_utils/processed_data/'
+
+
+# Pull out shall
+#rbd_i = tr.get_var_allsites(daily, 'shall_swc_interp', sites, startyear=startyr, endyear=endyr)
+#rbd_i = rbd_i.resample( '1M', how='mean' )
+# Write files to outpath
+#rbd_i.to_csv(outpath + 'NMEG_monthly_shallSWC.csv')
+
+# Pull out mid
+#rbd_i = tr.get_var_allsites(daily, 'mid_swc_interp', sites, startyear=startyr, endyear=endyr)
+#rbd_i = rbd_i.resample( '1M', how='mean' )
+# Write files to outpath
+#rbd_i.to_csv(outpath + 'NMEG_monthly_midSWC.csv')
+
+# Pull out deep
+#rbd_i = tr.get_var_allsites(daily, 'deep_swc_interp', sites, startyear=startyr, endyear=endyr)
+#rbd_i = rbd_i.resample( '1M', how='mean' )
+# Write files to outpath
+#rbd_i.to_csv(outpath + 'NMEG_monthly_deepSWC.csv')
 
