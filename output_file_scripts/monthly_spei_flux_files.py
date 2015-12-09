@@ -109,32 +109,51 @@ for site in sites:
             '1M', how='mean')
     monthly[site]['TA_F_min_avg'] = daily[site].TA_F_min.resample(
             '1M', how='mean')
-    monthly[site]['growing_deg_days_sum'] = daily[site].degree_days.resample(
-            '1M', how='sum')
-    monthly[site]['growing_deg_days_2_sum'] = daily[site].degree_days2.resample(
-            '1M', how='sum')
-    monthly[site]['peak_NEE_dayfrac_avg'] = daily[site].peakNEE_dayfrac.resample(
-            '1M', how='mean')
-    monthly[site]['peak_GPP_dayfrac_avg'] = daily[site].peakGPP_dayfrac.resample(
-            '1M', how='mean')
-    monthly[site]['peak_RECO_dayfrac_avg'] = daily[site].peakRECO_dayfrac.resample(
-            '1M', how='mean')
+    monthly[site]['growing_deg_days_sum'
+            ] = daily[site].degree_days.resample('1M', how='sum')
+    monthly[site]['growing_deg_days_2_sum'
+            ] = daily[site].degree_days2.resample('1M', how='sum')
+    monthly[site]['peak_NEE_dayfrac_avg'
+            ] = daily[site].peakNEE_dayfrac.resample('1M', how='mean')
+    monthly[site]['peak_GPP_dayfrac_avg'
+            ] = daily[site].peakGPP_dayfrac.resample('1M', how='mean')
+    monthly[site]['peak_RECO_dayfrac_avg'
+            ] = daily[site].peakRECO_dayfrac.resample('1M', how='mean')
     
     # Load monthly SPEI file for the site
     spei = pd.read_csv(spei_path + 'SPEI_months_' + site.lower() + '.csv', 
             index_col=0, parse_dates=True, na_values=['NA'])
+    spei['spei3mon_vwet'] = spei.spei3mon >= 1.5
+    spei['spei3mon_wet'] = np.logical_and(spei.spei3mon >= 0.5,
+            spei.spei3mon < 1.5)
+    spei['spei3mon_avg'] = np.logical_and(spei.spei3mon > -0.5,
+            spei.spei3mon < 0.5)
+    spei['spei3mon_dry'] = np.logical_and(spei.spei3mon <= -0.5,
+            spei.spei3mon > -1.5)
+    spei['spei3mon_vdry'] = spei.spei3mon <= -1.5
+    spei['spei9mon_vwet'] = spei.spei9mon >= 1.5
+    spei['spei9mon_wet'] = np.logical_and(spei.spei9mon >= 0.5,
+            spei.spei9mon < 1.5)
+    spei['spei9mon_avg'] = np.logical_and(spei.spei9mon > -0.5,
+            spei.spei9mon < 0.5)
+    spei['spei9mon_dry'] = np.logical_and(spei.spei9mon <= -0.5,
+            spei.spei9mon > -1.5)
+    spei['spei9mon_vdry'] = spei.spei9mon <= -1.5
+
+
     # Join the two files on the date index
     monthly_join = pd.concat([monthly[site], spei], axis=1)
-
-   # monthly_join.to_csv('../processed_data/monthly_spei_flux_' + site + '.csv',
-   #     na_rep='NA')
    
     # Write file
+    import subprocess as sp
+    git_sha = sp.check_output(
+            ['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
     meta_data = pd.Series([('site: {0}'.format(site)),
         ('date generated: {0}'.format(str(dt.datetime.now()))),
-        ('script: monthly_spei_flux_files.py'),('--------')])
-    with open('../processed_data/monthly_spei_flux_' + site + '.csv',
-            'w') as fout:
+        ('script: monthly_spei_flux_files.py'),
+        ('git HEAD SHA: {0}'.format(git_sha)),('--------')])
+    with open('../processed_data/monthly_spei_flux/monthly_spei_flux_'
+            + site + '.csv', 'w') as fout:
         fout.write('---file metadata---\n')
         meta_data.to_csv(fout, index=False)
         monthly_join.to_csv(fout, na_rep='NA')
