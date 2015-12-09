@@ -136,3 +136,15 @@ daily_to_xts <- function( df ){
     return(df_xts)
 }
 
+# this is example code for filling in missing observations in a time series
+# Will implement in above functions as needed
+#dim(seg_s)
+# timeseries is shorter than 8 full years of days (2922)
+#sum(is.na(seg_s$SWC_G1_22p5_AVG))
+# So, create a full 8 year time series to fill in gaps
+#x <- as.Date("2007-01-01"):as.Date("2014-12-31")
+#length(x)
+# Merge it into seg_s - missing days will be populated with NA
+#seg_s <- merge(seg_s, as.Date(x))
+#dim(seg_s)
+#sum(is.na(seg_s$SWC_G1_22p5_AVG)) # 224 more NA values
