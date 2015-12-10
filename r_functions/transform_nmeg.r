@@ -17,13 +17,6 @@ rename_vars <- function(df) {
   colnames(df)[grep('Ses', colnames(df))] <- 'Shrubland'
   colnames(df)[grep('Seg', colnames(df))] <- 'Grassland'
   
-  df$season <- revalue(df$season, c("cold"="Cold",
-                            "monsoon"="Monsoon",
-                            "spring"="Spring"))
-  
-  reorder <- c('Cold', 'Spring', 'Monsoon')
-  df$season <- factor(df$season, levels=reorder)
-  
   return(df)
 }
 
