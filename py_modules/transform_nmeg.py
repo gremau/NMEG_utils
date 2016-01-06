@@ -219,7 +219,7 @@ def add_WY_cols( df ) :
     """
     df_wy = df.copy()
     # Add water year columns
-    wy = df.index + dt.timedelta(days=61) #61 = Nov 1st, 91 = Oct 1st wy start
+    wy = df.index + dt.timedelta(days=91) #61 = Nov 1st, 91 = Oct 1st wy start
     df_wy['year_w'] = wy.year
     df_wy['doy_w'] = wy.dayofyear
     # Add hydrologic season columns
