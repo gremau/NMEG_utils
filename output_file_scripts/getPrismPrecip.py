@@ -1,6 +1,11 @@
+
+# Append the path where bilParser.py lives, then import
+import sys
+sys.path.append( '/home/greg/current/NMEG_utils/py_modules/' )
+import bilParser as bf
+# import other packages
 import matplotlib.pyplot as plt
 import pandas as pd
-import bilParser as bf
 
 '''
 This script reads prism bil files in the './PRISM_daily' directory.
@@ -41,11 +46,11 @@ def getPrecipData(year, data_path):
 # NOTE - Manually change the month in the PRISM_daily directory and
 # date range if doing an incomplete year dataset
 # (current year to 6 months after)
-years = list(range(2015, 2016))
-path = r'~/Desktop/'
+years = list(range(2005, 2007))
+path = r'/home/greg/data/'
 make_plot=False
 for i in years:
-    a = getPrecipData(i, path + r'bil/')
+    a = getPrecipData(i, path + r'bil_files/')
     if make_plot:
         a.plot()
         plt.show()
