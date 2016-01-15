@@ -1,19 +1,22 @@
+import gdal
+import gdalconst
+import pandas as pd
 import pdb
 
 class BilFile(object):
+# This is the class used to open a .bil file and make georeferenced data
+# available. Raster values for a coordinate are extracted using the 
+# extract_coord_val method
 
     def __init__(self, bil_file):
         # Construct the BilFile object and initialize its
         # properties
-        import gdal
-        import gdalconst
         self.bil_file = bil_file
         self.hdr_file = bil_file.split('.')[0]+'.hdr'
         # Register EHdr driver needed for these files - automatic in python?
         # gdal.GetDriverByName('EHdr').Register()
         # Open the file and put in dataset
         dataset = gdal.Open(self.bil_file, gdalconst.GA_ReadOnly)
-        #pdb.set_trace()
         band = dataset.GetRasterBand(1)
         self.ncol = dataset.RasterXSize
         self.nrow = dataset.RasterYSize
@@ -24,10 +27,71 @@ class BilFile(object):
         self.originY = geotransform[3]
         self.pixelWidth = geotransform[1]
         self.pixelHeight = geotransform[5]
-        pdb.set_trace()
         self.data = band.ReadAsArray()
 
     def extract_coord_val(self, lat, lon):
+        # Method for extracting raster values at given coordinates
         y = int((lat - self.originY)/self.pixelHeight)
         x = int((lon - self.originX)/self.pixelWidth)
         return self.data[y, x]
+
+# Function for extracting daily PRISM precip data
+def getDailyPrismPrecip(year, data_path, coords_file):
+    # Read in site coordinates, get date range and create a DataFrame
+    #to fill
+    pnts = pd.read_csv(coords_file)
+    drange =  pd.date_range('1,1,{0}'.format(year),
+            '12,31,{0}'.format(year), freq='D')
+    df = pd.DataFrame(index=drange, columns=pnts.sitecode)
+    for i in range(len(drange)):
+        # Create a tuple to fill the file dates in,
+        # pad month & day with zeros
+        ymd_tuple = (str(drange.year[i]),
+                str(drange.month[i]).zfill(2),
+                str(drange.day[i]).zfill(2))
+        # Create GDAL vsizip file path (read directly from zip archive)
+        # See https://trac.osgeo.org/gdal/wiki/UserDocs/ReadInZip
+        bil_file = (r'/vsizip/' + data_path +
+        r'PRISM_ppt_stable_4kmD2_{0}0101_{0}1231_bil.zip/'.format(year) +
+        r'PRISM_ppt_stable_4kmD2_{0}{1}{2}_bil.bil'.format(*ymd_tuple))
+        # If for some reason this vsizip interface won't work, extract the
+        # archive and use the following:
+        #bil_file = (data_path  +
+        #    r'PRISM_ppt_stable_4kmD2_{0}0101_{0}1231_bil/'.format(*ymd_tuple) +
+        #    r'PRISM_ppt_stable_4kmD2_{0}{1}{2}_bil.bil'.format(*ymd_tuple))
+        bil_ds = BilFile(bil_file)
+        for j in range(len(pnts.index)):
+            precip = bil_ds.extract_coord_val(pnts.lat[j], pnts.lon[j])
+            df.iloc[i, j] = precip
+    return df
+
+# Function for extracting daily PRISM precip data
+def get30yrPrismPrecip(data_path, coords_file):
+    # Read in site coordinates, get date range and create a DataFrame
+    #to fill
+    pnts = pd.read_csv(coords_file)
+    #drange =  pd.date_range('1,1,{0}'.format(year),
+    #        '12,31,{0}'.format(year), freq='D')
+    df = pd.DataFrame(index=pnts.sitecode, columns=['30yr_ppt'])
+    #for i in range(len(drange)):
+        # Create a tuple to fill the file dates in,
+        # pad month & day with zeros
+        #ymd_tuple = (str(drange.year[i]),
+        #        str(drange.month[i]).zfill(2),
+        #        str(drange.day[i]).zfill(2))
+        # Create GDAL vsizip file path (read directly from zip archive)
+        # See https://trac.osgeo.org/gdal/wiki/UserDocs/ReadInZip
+        # bil_file = (r'/vsizip/' + data_path +
+        # r'PRISM_ppt_stable_4kmD2_{0}0101_{0}1231_bil.zip/'.format(year) +
+        # r'PRISM_ppt_stable_4kmD2_{0}{1}{2}_bil.bil'.format(*ymd_tuple))
+        # If for some reason this vsizip interface won't work, extract the
+        # archive and use the following:
+    bil_file = (data_path  +
+            r'PRISM_ppt_30yr_normal_800mM2_annual_bil.bil')
+    #pdb.set_trace()
+    bil_ds = BilFile(bil_file)
+    for j in range(len(pnts.index)):
+        precip = bil_ds.extract_coord_val(pnts.lat[j], pnts.lon[j])
+        df.loc[pnts.sitecode[j], '30yr_ppt'] = precip
+    return df
+
