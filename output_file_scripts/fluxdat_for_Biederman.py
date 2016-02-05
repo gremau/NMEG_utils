@@ -9,16 +9,17 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import ipdb as ipdb
+import pdb as pdb
 
 datapath = ('/home/greg/sftp/eddyflux/Ameriflux_files/provisional/')
 fileList = os.listdir(datapath)
 
-startyear = 2007
+startyear = 2010
 endyear = 2014
 
 # List AF site names in same order
-siteNames = [ 'US-Vcm', 'US-Vcp', 'US-Wjs', 'US-Mpj', 'US-Ses' ]
+siteNames = [ 'US-Vcm', 'US-Vcp', 'US-Wjs', 'US-Mpj', 'US-Ses', 'US-Sen' ]
+siteNames = [ 'US-Sen' ]
 
 for i, site in enumerate( siteNames ):
 
@@ -30,14 +31,14 @@ for i, site in enumerate( siteNames ):
     site_df_resamp = tr.resample_30min_aflx( site_df, 
             freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ], 
             le_flux=[ 'LE_F' ], avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET' ], 
-            precip_col='P_F' , tair_col='TA_F' )
+            sum_cols='P_F' , tair_col='TA_F' )
 
 
     #ipdb.set_trace()
 
     # Export
     site_df_resamp.to_csv( '../processed_data/' + site 
-            + '_biederman_synth.csv',
+            + '_biederman_synth_july.csv',
             na_rep = '-9999')
 
 
