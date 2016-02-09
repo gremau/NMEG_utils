@@ -36,7 +36,7 @@ class BilFile(object):
         return self.data[y, x]
 
 # Function for extracting daily PRISM precip data
-def getDailyPrismPrecip(year, data_path, coords_file):
+def getDailyPrism(year, metdata, data_path, coords_file):
     # Read in site coordinates, get date range and create a DataFrame
     #to fill
     pnts = pd.read_csv(coords_file)
@@ -51,44 +51,66 @@ def getDailyPrismPrecip(year, data_path, coords_file):
                 str(drange.day[i]).zfill(2))
         # Create GDAL vsizip file path (read directly from zip archive)
         # See https://trac.osgeo.org/gdal/wiki/UserDocs/ReadInZip
-        bil_file = (r'/vsizip/' + data_path +
-        r'PRISM_ppt_stable_4kmD2_{0}0101_{0}1231_bil.zip/'.format(year) +
-        r'PRISM_ppt_stable_4kmD2_{0}{1}{2}_bil.bil'.format(*ymd_tuple))
         # If for some reason this vsizip interface won't work, extract the
-        # archive and use the following:
-        #bil_file = (data_path  +
-        #    r'PRISM_ppt_stable_4kmD2_{0}0101_{0}1231_bil/'.format(*ymd_tuple) +
-        #    r'PRISM_ppt_stable_4kmD2_{0}{1}{2}_bil.bil'.format(*ymd_tuple))
+        # archive and remove the 'vsizip' part of pathname
+        bil_file = (r'/vsizip/' + data_path +
+        r'PRISM_{0}_stable_4kmD2_{1}0101_{1}1231_bil.zip/'.format(
+            metdata, year) +
+        r'PRISM_{0}_stable_4kmD2_{1}{2}{3}_bil.bil'.format(metdata, *ymd_tuple))
+
         bil_ds = BilFile(bil_file)
         for j in range(len(pnts.index)):
-            precip = bil_ds.extract_coord_val(pnts.lat[j], pnts.lon[j])
-            df.iloc[i, j] = precip
+            pt_val = bil_ds.extract_coord_val(pnts.lat[j], pnts.lon[j])
+            df.iloc[i, j] = pt_val
     return df
 
-# Function for extracting daily PRISM precip data
+# Function for extracting monthly PRISM data
+# Note that this uses 1981-2015 files and will need to be altered if different
+# files are used
+def getMonthlyPrism( metdata, data_path, coords_file ):
+    # Read in site coordinates, get date range and create a DataFrame
+    #to fill
+    pnts = pd.read_csv(coords_file)
+    drange =  pd.date_range('1,1,1981', '12,31,2014', freq='M')
+    df = pd.DataFrame(index=drange, columns=pnts.sitecode)
+    for i in range(len(drange)):
+        # Create a tuple to fill the file dates in,
+        # pad month & day with zeros
+        ym_tuple = (str(drange.year[i]),
+                str(drange.month[i]).zfill(2))
+        # Create GDAL vsizip file path (read directly from zip archive)
+        # See https://trac.osgeo.org/gdal/wiki/UserDocs/ReadInZip
+        # If for some reason this vsizip interface won't work, extract the
+        # archive and remove the 'vsizip' part of pathname
+        if metdata=='ppt':
+            bil_file = (r'/vsizip/' + data_path +
+                    r'PRISM_{0}_stable_4kmM3_198101_201507_bil.zip/'.format(
+                        metdata) +
+                    r'PRISM_{0}_stable_4kmM3_{1}{2}_bil.bil'.format(
+                        metdata, *ym_tuple))
+        elif metdata=='tmean':
+            bil_file = (r'/vsizip/' + data_path +
+                    r'PRISM_{0}_stable_4kmM2_198101_201507_bil.zip/'.format(
+                        metdata) +
+                    r'PRISM_{0}_stable_4kmM2_{1}{2}_bil.bil'.format(
+                        metdata, *ym_tuple))
+
+        bil_ds = BilFile(bil_file)
+        for j in range(len(pnts.index)):
+            pt_val = bil_ds.extract_coord_val(pnts.lat[j], pnts.lon[j])
+            df.iloc[i, j] = pt_val
+    return df
+
+
+# Function for extracting 30 year normal PRISM precip data
 def get30yrPrismPrecip(data_path, coords_file):
     # Read in site coordinates, get date range and create a DataFrame
     #to fill
     pnts = pd.read_csv(coords_file)
-    #drange =  pd.date_range('1,1,{0}'.format(year),
-    #        '12,31,{0}'.format(year), freq='D')
     df = pd.DataFrame(index=pnts.sitecode, columns=['30yr_ppt'])
-    #for i in range(len(drange)):
-        # Create a tuple to fill the file dates in,
-        # pad month & day with zeros
-        #ymd_tuple = (str(drange.year[i]),
-        #        str(drange.month[i]).zfill(2),
-        #        str(drange.day[i]).zfill(2))
-        # Create GDAL vsizip file path (read directly from zip archive)
-        # See https://trac.osgeo.org/gdal/wiki/UserDocs/ReadInZip
-        # bil_file = (r'/vsizip/' + data_path +
-        # r'PRISM_ppt_stable_4kmD2_{0}0101_{0}1231_bil.zip/'.format(year) +
-        # r'PRISM_ppt_stable_4kmD2_{0}{1}{2}_bil.bil'.format(*ymd_tuple))
-        # If for some reason this vsizip interface won't work, extract the
-        # archive and use the following:
+
     bil_file = (data_path  +
             r'PRISM_ppt_30yr_normal_800mM2_annual_bil.bil')
-    #pdb.set_trace()
     bil_ds = BilFile(bil_file)
     for j in range(len(pnts.index)):
         precip = bil_ds.extract_coord_val(pnts.lat[j], pnts.lon[j])
