@@ -38,7 +38,7 @@ for site in sites:
 #Annual file for marcy
 daily = { x : 
          tr.resample_30min_aflx( hourly[x], freq='1D', 
-             avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET', 'VPD_F'], 
+             avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'VPD_F'], 
              minmax_cols=['TA_F', 'VPD_F', 'GPP', 'RECO'],
              sum_cols=[ 'P_F', 'hrs_C_uptake' ] , tair_col='TA_F' )
          for x in hourly.keys() }
@@ -84,7 +84,7 @@ monthly = { x :
          tr.resample_30min_aflx( hourly[x], freq='1M', 
              c_fluxes=[ 'GPP', 'RECO', 'FC_F' ], 
              le_flux=[ 'LE_F' ], 
-             avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET', 'VPD_F'], 
+             avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'VPD_F'], 
              sum_cols=[ 'P_F', 'hrs_C_uptake' ] , tair_col='TA_F' )
          for x in hourly.keys() }
 
@@ -121,24 +121,24 @@ for site in sites:
             ] = daily[site].peakRECO_dayfrac.resample('1M', how='mean')
     
     # Load monthly SPEI file for the site
-    spei = pd.read_csv(spei_path + 'SPEI_months_' + site.lower() + '.csv', 
+    spei = pd.read_csv(spei_path + 'SPEI_monthly_US-' + site + '_nainterp.csv', 
             index_col=0, parse_dates=True, na_values=['NA'])
-    spei['spei3mon_vwet'] = spei.spei3mon >= 1.5
-    spei['spei3mon_wet'] = np.logical_and(spei.spei3mon >= 0.5,
-            spei.spei3mon < 1.5)
-    spei['spei3mon_avg'] = np.logical_and(spei.spei3mon > -0.5,
-            spei.spei3mon < 0.5)
-    spei['spei3mon_dry'] = np.logical_and(spei.spei3mon <= -0.5,
-            spei.spei3mon > -1.5)
-    spei['spei3mon_vdry'] = spei.spei3mon <= -1.5
-    spei['spei9mon_vwet'] = spei.spei9mon >= 1.5
-    spei['spei9mon_wet'] = np.logical_and(spei.spei9mon >= 0.5,
-            spei.spei9mon < 1.5)
-    spei['spei9mon_avg'] = np.logical_and(spei.spei9mon > -0.5,
-            spei.spei9mon < 0.5)
-    spei['spei9mon_dry'] = np.logical_and(spei.spei9mon <= -0.5,
-            spei.spei9mon > -1.5)
-    spei['spei9mon_vdry'] = spei.spei9mon <= -1.5
+    spei['spei3mon_vwet'] = spei.SPEI_monthly_3 >= 1.5
+    spei['spei3mon_wet'] = np.logical_and(spei.SPEI_monthly_3 >= 0.5,
+            spei.SPEI_monthly_3 < 1.5)
+    spei['spei3mon_avg'] = np.logical_and(spei.SPEI_monthly_3 > -0.5,
+            spei.SPEI_monthly_3 < 0.5)
+    spei['spei3mon_dry'] = np.logical_and(spei.SPEI_monthly_3 <= -0.5,
+            spei.SPEI_monthly_3 > -1.5)
+    spei['spei3mon_vdry'] = spei.SPEI_monthly_3 <= -1.5
+    spei['spei9mon_vwet'] = spei.SPEI_monthly_9 >= 1.5
+    spei['spei9mon_wet'] = np.logical_and(spei.SPEI_monthly_9 >= 0.5,
+            spei.SPEI_monthly_9 < 1.5)
+    spei['spei9mon_avg'] = np.logical_and(spei.SPEI_monthly_9 > -0.5,
+            spei.SPEI_monthly_9 < 0.5)
+    spei['spei9mon_dry'] = np.logical_and(spei.SPEI_monthly_9 <= -0.5,
+            spei.SPEI_monthly_9 > -1.5)
+    spei['spei9mon_vdry'] = spei.SPEI_monthly_9 <= -1.5
 
 
     # Join the two files on the date index
