@@ -13,7 +13,7 @@ scratch.m
 test_batch.m
 doc*
 *.swp
-*.ipynb_checkpoints*
+*/.ipynb_checkpoints/*
 processed_data/*
 
 
