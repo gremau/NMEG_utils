@@ -85,9 +85,12 @@ add_WY_cols <- function( df ){
 
     # Add hydrologic season columns
     df_new[,'season'] <- as.vector(rep(NA, nrow(df_ts)))
-    df_new$season[(.indexmon(df_ts) > 10) | (.indexmon(df_ts) < 3)] = 'cold'
-    df_new$season[(.indexmon(df_ts) > 2) & (.indexmon(df_ts) < 7)] = 'spring'
-    df_new$season[(.indexmon(df_ts) > 6) & (.indexmon(df_ts) < 11)] = 'monsoon'
+    df_new$season[(.indexmon(df_ts)+1 > 10) | 
+                  (.indexmon(df_ts)+1 < 3)] <- 'cold'
+    df_new$season[(.indexmon(df_ts)+1 > 2) & 
+                  (.indexmon(df_ts)+1 < 7)] <- 'spring'
+    df_new$season[(.indexmon(df_ts)+1 > 6) & 
+                  (.indexmon(df_ts)+1 < 11)] <- 'monsoon'
 
     return(df_new)
 }
