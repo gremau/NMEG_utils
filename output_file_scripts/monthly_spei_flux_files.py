@@ -67,16 +67,16 @@ for i, site in enumerate(sites):
             return np.nan
         else:
             return (arr[0].hour*3600 + arr[0].minute*60)/(3600*24)
+    
     # Calculate daily ET and PET 
     # (see NMEG_utils/py_modules/transform_nmeg for documentation)
-    #daily_et_pet = tr.get_daytime_et_pet( h, freq='1D')
+    daily_et_pet = tr.get_daytime_et_pet( h, freq='1D')
     
     daily[site][ 'peakGPP_dayfrac'] = peakGPP_t.apply( get_frac )
     daily[site][ 'peakNEE_dayfrac'] = peakNEE_t.apply( get_frac )
     daily[site][ 'peakRECO_dayfrac'] = peakRECO_t.apply( get_frac )
-    #daily[site][ 'ET_F_mm_daytime'] = daily_et_pet.ET_mm_daytime
-    #daily[site][ 'PET_F_mm_daytime'] = daily_et_pet.PET_mm_daytime
-
+    daily[site][ 'ET_F_mm_daytime'] = daily_et_pet.ET_mm_daytime
+    daily[site][ 'PET_F_mm_daytime'] = daily_et_pet.PET_mm_daytime
 
 
 # Create a monthly file. Columns from daily will need to be resampled and added
@@ -99,6 +99,10 @@ for site in sites:
     # Now add the calculated values (many come from daily data)
     monthly[site]['GPP_over_RE'] = (
             monthly[site].GPP_g_int/monthly[site].RECO_g_int)
+    monthly[site]['ET_F_mm_daytime'
+            ] = daily[site].ET_F_mm_daytime.resample('1M', how='sum')
+    monthly[site]['PET_F_mm_daytime'
+            ] = daily[site].PET_F_mm_daytime.resample('1M', how='sum')
     monthly[site]['hrs_C_uptake_dayavg'] = daily[site].hrs_C_uptake.resample(
             '1M', how='mean')
     monthly[site]['GPP_dailymax_avg'] = daily[site].GPP_max.resample(
