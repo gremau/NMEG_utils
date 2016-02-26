@@ -121,7 +121,7 @@ def get_daytime_et_pet( df, freq='1D',
 
 
 def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ], 
-        le_flux=[ 'LE_F' ], avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET' ],
+        le_flux=[ 'LE_F' ], avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET_F' ],
         minmax_cols=[ 'TA_F', 'VPD_F' ],
         sum_cols=[ 'P_F' ] , tair_col='TA_F' ):
     """

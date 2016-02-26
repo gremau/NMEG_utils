@@ -63,7 +63,7 @@ def load_aflx_file( fname, year, old_date_parse=False ) :
 
     else:
         # Use ISO date parse
-        parsed_df =  pd.read_csv( fname, skiprows=( 0,1,2,4 ), header=0,
+        parsed_df =  pd.read_csv( fname, skiprows=( 0,1,2,3,4,5,7 ), header=0,
                 parse_dates={ 'Date': [0] },
                 na_values='-9999', index_col='Date' )
 
