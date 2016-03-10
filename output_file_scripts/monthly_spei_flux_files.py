@@ -21,7 +21,7 @@ end = 2014
 sites = ['Seg', 'Ses', 'Wjs', 'Mpj', 'Vcp', 'Vcm']
 #sites = ['Seg']
 
-# Fill a dict with multiyear dataframes for each site in sites
+# Load hourly data into multiyear dataframes (1/site) within a dict
 hourly = { x :
         ld.get_multiyr_aflx( 'US-' + x, af_path, gapfilled=True,
             startyear=start, endyear=end) 
@@ -34,8 +34,7 @@ for site in sites:
     test = hourly[site].FC_F < 0
     hourly[site].loc[test, 'hrs_C_uptake'] = 0.5
     
-
-#Annual file for marcy
+# Turn this into a daily dataset
 daily = { x : 
          tr.resample_30min_aflx( hourly[x], freq='1D', 
              avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET_F', 'VPD_F'], 
@@ -44,6 +43,7 @@ daily = { x :
          for x in hourly.keys() }
 
 # Now calculate degree days and time of peak fluxes
+# Do this on a daily basis and add to the dataframes in daily dict
 for i, site in enumerate(sites):
     # Add columns with degree days (and remove <0 values from second)
     daily[site]['degree_days'] = (daily[site].TA_F_max - daily[site].TA_F_min)/2
