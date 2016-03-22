@@ -19,13 +19,16 @@ start = 2007
 end = 2014
 # Sites to load
 sites = ['Seg', 'Ses', 'Sen', 'Wjs', 'Mpj', 'Mpg', 'Vcp', 'Vcm']
+sites = ['Mpj', 'Mpg']
 
 outfile = '../processed_data/annual_files/annual_NMEG_fluxes.csv'
 
 # Create a wateryear-based annual file?
 wyear=True
 wyear_days = 91
-wyear_days = 60
+#wyear_days = 60
+outfile = '../processed_data/annual_files/laura_wateryear_NMEG_fluxes.csv'
+
 
 # Load hourly data into multiyear dataframes (1/site) within a dict
 hourly = { x :
@@ -34,7 +37,10 @@ hourly = { x :
         for x in sites }
 # Add an observations column to sum
 for x in hourly.keys():
+    print(hourly[x].shape)
+    hourly[x] = hourly[x].loc[hourly[x].index.year > 2008]
     hourly[x].insert(1, 'n_obs', 1)
+    print(hourly[x].shape)
 
 
 # Shift the index if using wateryear
@@ -42,8 +48,6 @@ if wyear:
     for x in hourly.keys():
         hourly[x].index = hourly[x].index + dt.timedelta(days=wyear_days)
         
-    outfile = '../processed_data/annual_files/nov_wateryear_NMEG_fluxes.csv'
-
 
 # To get annual values of daytime ET we need to first calculate it on a daily
 # basis. It can then be added to a dict
