@@ -207,19 +207,20 @@ def get_var_allsites( datadict, varname, sites, startyear=now.year - 1,
 
     return new_df
 
-def add_WY_cols( df ) :
+def add_WY_cols( df, ndays=91 ) :
     """
     Add water year columns
     
     Args:
-        df (obj) : a pandas Data.Frame object with a timeseries index
-
+        df (obj)    : a pandas Data.Frame object with a timeseries index
+        ndays(int)  : an integer number of days to offset wateryear by. 
+                      61 days = Nov 1st, 91 days = Oct 1st wy start
     Return:
         df_wy (obj) : a copy of df with water year columns added 
     """
     df_wy = df.copy()
     # Add water year columns
-    wy = df.index + dt.timedelta(days=91) #61 = Nov 1st, 91 = Oct 1st wy start
+    wy = df.index + dt.timedelta(ndays) #61 = Nov 1st, 91 = Oct 1st wy start
     df_wy['year_w'] = wy.year
     df_wy['doy_w'] = wy.dayofyear
     # Add hydrologic season columns

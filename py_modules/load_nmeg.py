@@ -410,25 +410,3 @@ def load_PJ_VWC_file(fname) :
             index_col=2,na_values='NA');    
 
 
-def add_WY_cols( df ) :
-    """
-    Add water year columns
-    
-    Args:
-        df (obj) : a pandas Data.Frame object with a timeseries index
-
-    Return:
-        df_wy (obj) : a copy of df with water year columns added 
-    """
-    df_wy = df.copy()
-    # Add water year columns
-    wy = df.index + dt.timedelta(days=61) #61 = Nov 1st, 91 = Oct 1st wy start
-    df_wy['year_w'] = wy.year
-    df_wy['doy_w'] = wy.dayofyear
-    # Add hydrologic season columns
-    df_wy['season'] = 'Null'
-    df_wy.season[(df_wy.index.month>10) | (df_wy.index.month<3)] = 'cold'
-    df_wy.season[(df_wy.index.month>2) & (df_wy.index.month<7)] = 'spring'
-    df_wy.season[(df_wy.index.month>6) & (df_wy.index.month<11)] = 'monsoon'
-
-    return df_wy
