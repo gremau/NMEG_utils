@@ -409,4 +409,115 @@ def load_PJ_VWC_file(fname) :
             parse_dates = [['year','month','mday']],
             index_col=2,na_values='NA');    
 
+def load_eddyproc_output( fname, year ) :
+    """
+    Load a specified eddyproc file and return a pandas DataFrame object.
+    DataFrame has a datetime index and has been reindexed to include all
+    30 minute periods in one year.
 
+    Args:
+        fname (str) : path and filename of desired AF file
+        year (int)  : year of ameriflux file
+
+    Return:
+        parsed_df   : pandas DataFrame    
+    """
+    # a date parser for older AF files (2007-2008)
+    def dparseMPI( d, m, y, H, M ):       
+        # MPI eddyproc sends back a crazy date format. Make a dataframe
+        # and then parse into a datetime
+        df = pd.DataFrame( dict(y = y.astype(float).astype(int), 
+                m = m.astype(float).astype(int),
+                d = d.astype(float).astype(int), 
+                H = H.astype(float).astype(int),
+                M = M.astype(float).astype(int)))
+        return pd.to_datetime( df.y*100000000 + df.m*1000000 + df.d*10000 
+                + df.H*100 + df.M, format='%Y%m%d%H%M')
+
+
+    print('Parsing ' + fname)
+    parsed_df =  pd.read_csv( fname, skiprows=(1,), header=0,
+            delim_whitespace=True,# OR sep='\s+',
+            parse_dates={ 'Date': [ 0, 1, 2, 3, 4 ] }, date_parser=dparseMPI,
+            na_values='-9999', index_col='Date')
+    
+    # We will reindex to include every 30-min period during the given year,
+    # from YR-01-01 00:30 to YR+1-01-01 00:00
+    full_idx = pd.date_range( str( year ) + '-01-01 00:30:00',
+            str( year + 1 ) + '-01-01 00:00:00', freq = '30T')
+
+    # Remove irregular data and reindex dataframes
+    idxyrs = parsed_df.index.year > 2005;
+    parsed_df = parsed_df.iloc[ idxyrs, : ]
+    if len( parsed_df.index ) < len( full_idx ):
+        print( "WARNING: some observations may be missing!" )
+    
+    parsed_df = parsed_df.reindex( full_idx )
+    
+    return parsed_df
+
+
+def add_eddyproc_uncertainty( df, site, basepath, year, unc_vars=[] ) :
+    """
+    Add uncertainty columns derived from eddyproc output (these come from the
+    Falge 2001 method). This can be done for hourly ameriflux data only.
+    
+    Args:
+        df (obj)    : a pandas Data.Frame object with a timeseries index
+        ndays(int)  : an integer number of days to offset wateryear by. 
+                      61 days = Nov 1st, 91 days = Oct 1st wy start
+    Return:
+        df_unc (obj) : a copy of df with uncertainty columns added 
+    """
+    
+    raise NotImplementedError('Not implemented yet!')
+
+    df_unc = df.copy()
+    path = basepath + site + '/' + 'DataSetafterFluxpart_' + str(year) + '.txt'
+
+
+    return df_unc
+
+def get_multiyr_eddyproc( site, base_path,
+                      startyear=now.year - 1, endyear=now.year - 1) :
+    """
+    Load a list of 1-year eddyproc output files, append them, and then return
+    a pandas DataFrame object of eddyproc data from startyear to endyear.
+
+    Args:
+        site        : Site name ( Ameriflux style )
+        afpath      : Path to directory of ameriflux files
+        startyear   : First year of data to include
+        endyear     : Last year of data to include
+
+    Return:
+        site_df     : pandas DataFrame containing multiple years of eddyproc 
+                      data from one site
+    """    
+    # Create empty dataframe spanning all days in  startyear to endyear
+    newidx = pd.date_range( str( startyear ) + '-01-01 00:30:00',
+            str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
+    
+    # Get a list of filenames in the directory
+    file_list = os.listdir( base_path + site )
+
+    # Initialize DataFrame
+    site_df = pd.DataFrame()
+    # Loop through each year and fill the dataframe
+    for j in range(startyear, endyear + 1):
+        fName = 'DataSetafterFluxpart_{0}.txt'.format( j )
+        # If theres is a file for that year, load it
+        if fName in file_list:
+            # Call load_eddyproc_unc
+            year_df = load_eddyproc_output( base_path + site + '/' + fName, j )
+            # And append to site_df
+            site_df = site_df.append( year_df, verify_integrity=True  )
+        else:
+            print( 'WARNING: ' + fName + ' is missing')
+
+    # Now standardize the time period and index of site_df
+    idxyrs = site_df.index.year > startyear - 1;
+    site_df = site_df.iloc[ idxyrs, : ]
+    site_df = site_df.reindex( newidx )
+
+    return site_df
