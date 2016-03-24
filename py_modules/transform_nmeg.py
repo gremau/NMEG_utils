@@ -5,7 +5,7 @@ Functions for conversions and transforms of NMEG data
  Greg Maurer
 """
 
-#import ipdb as ipdb
+import pdb as pdb
 import datetime as dt
 import pandas as pd
 import numpy as np
@@ -41,15 +41,16 @@ def sum_30min_et( df, t_air ) :
     """
 
     df_int = df.copy()
+    export_cname = []
     # Define the lambda parameter
     lmbda = ( 2.501 - 0.00236 * t_air ) * 1000
     # For each input column create a new header and convert values to ET
     for i, cname in enumerate( df.columns ) :
-        export_cname = 'ET_mm_fullday_' + str( i )
+        export_cname.append('ET_mm_fullday_' + str( i ))
         et_mms = ( 1 / ( lmbda * 1000 )) * df_int[ cname ]
         et_mm_int = et_mms * 1800
-        df_int[ export_cname ] = et_mm_int
-
+        df_int[ export_cname[i] ] = et_mm_int
+    
     return df_int[ export_cname ]
 
 
