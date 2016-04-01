@@ -6,7 +6,6 @@ Functions for loading various NMEG data files
 """
 
 import numpy as np
-#import ipdb as ipdb
 import datetime as dt
 import pandas as pd
 import os

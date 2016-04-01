@@ -42,8 +42,8 @@ for i, site in enumerate(sites):
     # Calculate daily ET and PET (see NMEG_utils/py_modules/transform_nmeg 
     # for documentation)
     daily_et_pet = tr.get_daytime_et_pet( h, freq='1D')
-    daily[site][ 'ET_F_mm_daytime'] = daily_et_pet.ET_mm_daytime
-    daily[site][ 'PET_F_mm_daytime'] = daily_et_pet.PET_mm_daytime
+    daily[site][ 'ET_mm_dayint'] = daily_et_pet.ET_mm_dayint
+    daily[site][ 'PET_mm_dayint'] = daily_et_pet.PET_mm_dayint
 
 # Write files to outpath
 { x : daily[x].to_csv(outpath + 'US-' +x + '_daily_aflx.csv') for x in sites}

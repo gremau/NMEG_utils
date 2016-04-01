@@ -32,10 +32,9 @@ def sum_30min_c_flux( df ) :
 
 def sum_30min_et( df, t_air ) :
     """
-    THIS IS AN OUTDATED METHOD
     Convert 30min latent heat flux to ET ( W/m^2 to mm/s ) and sum (integrate) 
     for each 30min period. Note that this method sums the full day of ET,
-    rather than just daytime values (see get_daytime_et function below).
+    rather than just daytime values (see get_daytime_et_pet function below).
 
     see http://bwc.berkeley.edu/Amflux/equations/Gretchen-latent-heat-flux.htm
     """
@@ -46,7 +45,7 @@ def sum_30min_et( df, t_air ) :
     lmbda = ( 2.501 - 0.00236 * t_air ) * 1000
     # For each input column create a new header and convert values to ET
     for i, cname in enumerate( df.columns ) :
-        export_cname.append('ET_mm_fullday_' + str( i ))
+        export_cname.append('ET_mm_24hint_' + str( i ))
         et_mms = ( 1 / ( lmbda * 1000 )) * df_int[ cname ]
         et_mm_int = et_mms * 1800
         df_int[ export_cname[i] ] = et_mm_int
@@ -94,7 +93,7 @@ def get_daytime_et_pet( df, freq='1D',
     # Calculate the lambda value for each day
     df_le_daily['lmbda'] = ( 2.501 - 0.00236 * df_le_daily[tair_col] ) * 1000
     # Calculate ET ( mean daily LE / (1000*lambda) * # daytime seconds
-    df_le_daily['ET_mm_daytime'] = ( ( 1 / ( df_le_daily.lmbda * 1000 )) * 
+    df_le_daily['ET_mm_dayint'] = ( ( 1 / ( df_le_daily.lmbda * 1000 )) * 
             df_le_daily[ le_col ] * (df_le_daily.daytime_obs * 1800) )
 
     # Now calculate PET
@@ -114,7 +113,7 @@ def get_daytime_et_pet( df, freq='1D',
     LEpot = alphaPT *(slopeSAT * (df_le_daily[ h_col ] + 
         df_le_daily[ le_col ]) / (slopeSAT + PSI))
     
-    df_le_daily['PET_mm_daytime'] = (
+    df_le_daily['PET_mm_dayint'] = (
             LEpot * 1800 * df_le_daily.daytime_obs / 
             (1000 * df_le_daily['lmbda']))
 
@@ -163,10 +162,19 @@ def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
     min_resamp = df_min.resample( freq, how='min' )
     max_resamp = df_max.resample( freq, how='max' )
 
+    # Rename the avg columns
+    for i in avg_cols:
+        avg_resamp.rename(columns={ i:i + '_avg'}, inplace=True)
+        
     # Rename the min/max columns
     for i in minmax_cols:
         min_resamp.rename(columns={ i:i + '_min'}, inplace=True)
         max_resamp.rename(columns={ i:i + '_max'}, inplace=True)
+    
+    # Rename the sum columns
+    for i in sum_cols:
+        sums_resamp.rename(columns={ i:i + '_sum'}, inplace=True)
+
 
     # Put to dataframes back together
     df_resamp = pd.concat( [ sums_resamp, avg_resamp, 
