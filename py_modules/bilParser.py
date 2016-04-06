@@ -35,7 +35,7 @@ class BilFile(object):
         x = int((lon - self.originX)/self.pixelWidth)
         return self.data[y, x]
 
-# Function for extracting daily PRISM precip data
+# Function for extracting daily PRISM data
 def getDailyPrism(year, metdata, data_path, coords_file):
     # Read in site coordinates, get date range and create a DataFrame
     #to fill
@@ -57,12 +57,41 @@ def getDailyPrism(year, metdata, data_path, coords_file):
         r'PRISM_{0}_stable_4kmD2_{1}0101_{1}1231_bil.zip/'.format(
             metdata, year) +
         r'PRISM_{0}_stable_4kmD2_{1}{2}{3}_bil.bil'.format(metdata, *ymd_tuple))
-
+        #pdb.set_trace()
         bil_ds = BilFile(bil_file)
         for j in range(len(pnts.index)):
             pt_val = bil_ds.extract_coord_val(pnts.lat[j], pnts.lon[j])
             df.iloc[i, j] = pt_val
     return df
+
+# Function for extracting daily PRISM data from provisional files
+def getDailyPrismProvis(year, month, metdata, data_path, bil_name, coords_file):
+    # Read in site coordinates, get date range and create a DataFrame
+    #to fill
+    pnts = pd.read_csv(coords_file)
+    drange =  pd.date_range('{0},1,1'.format(year),
+            '{0},12,31'.format(year), freq='D')
+    drange = drange[drange.month==month]
+    df = pd.DataFrame(index=drange, columns=pnts.sitecode)
+    for i in range(len(drange)):
+        # Create a tuple to fill the file dates in,
+        # pad month & day with zeros
+        ymd_tuple = (str(drange.year[i]),
+                str(drange.month[i]).zfill(2),
+                str(drange.day[i]).zfill(2))
+        # Create GDAL vsizip file path (read directly from zip archive)
+        # See https://trac.osgeo.org/gdal/wiki/UserDocs/ReadInZip
+        # If for some reason this vsizip interface won't work, extract the
+        # archive and remove the 'vsizip' part of pathname
+        bil_file = (r'/vsizip/' + data_path + bil_name + '/' +
+        r'PRISM_{0}_provisional_4kmD2_{1}{2}{3}_bil.bil'.format(metdata, 
+            *ymd_tuple))
+        bil_ds = BilFile(bil_file)
+        for j in range(len(pnts.index)):
+            pt_val = bil_ds.extract_coord_val(pnts.lat[j], pnts.lon[j])
+            df.iloc[i, j] = pt_val
+    return df
+
 
 # Function for extracting monthly PRISM data
 # Note that this uses 1981-2015 files and will need to be altered if different

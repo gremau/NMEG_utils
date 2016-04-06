@@ -23,7 +23,7 @@ import pdb
 # NOTE - Manually change the month in the PRISM_daily directory and
 # date range if doing an incomplete year dataset
 # (current year to 6 months after)
-years = list(range(2000, 2015))
+years = list(range(2007, 2015))
 site_coords_file = '/home/greg/current/NMEG_utils/site_coords.txt'
 make_plot=False
 
@@ -41,6 +41,12 @@ for yr in years:
     print(a.sum())
     a.to_csv(out_path + 'PRISM_Daily_ppt_{0}.csv'.format(yr), 
             index_label='date')
+
+# Code for making provisional files (can be appended to incomplete year data)
+#bil_name = 'PRISM_ppt_provisional_4kmD2_20151201_20151231_bil.zip'
+#prov = bf.getDailyPrismProvis(2015, 12, 'ppt', bil_path, bil_name, 
+#        site_coords_file) 
+#prov.to_csv(out_path + 'PRISM_DailyProvis_ppt_Dec2015.csv')
 
 
 # Then monthly precip and temperature data
