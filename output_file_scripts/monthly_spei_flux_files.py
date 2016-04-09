@@ -1,4 +1,5 @@
-# Script to create and export data files for Marcy
+# Script to create and export monthly data files
+# these include SPEI values calculated from our fluxes
 
 import sys
 sys.path.append( '/home/greg/current/NMEG_utils/py_modules/' )
@@ -16,7 +17,7 @@ import datetime as dt
 
 # Years to load
 start = 2007
-end = 2014
+end = 2015
 # Sites to load
 sites = ['Seg', 'Ses', 'Wjs', 'Mpj', 'Vcp', 'Vcm']
 #sites = ['Seg']
@@ -75,8 +76,8 @@ for i, site in enumerate(sites):
     daily[site][ 'peakGPP_dayfrac'] = peakGPP_t.apply( get_frac )
     daily[site][ 'peakNEE_dayfrac'] = peakNEE_t.apply( get_frac )
     daily[site][ 'peakRECO_dayfrac'] = peakRECO_t.apply( get_frac )
-    daily[site][ 'ET_F_mm_daytime'] = daily_et_pet.ET_mm_daytime
-    daily[site][ 'PET_F_mm_daytime'] = daily_et_pet.PET_mm_daytime
+    daily[site][ 'ET_mm_dayint'] = daily_et_pet.ET_mm_dayint
+    daily[site][ 'PET_mm_dayint'] = daily_et_pet.PET_mm_dayint
 
 
 # Create a monthly file. Columns from daily will need to be resampled and added
@@ -95,34 +96,32 @@ for site in sites:
     # First remove some columns from monthly dataframe
     monthly[site].drop( ['VPD_F_min', 'VPD_F_max', 'TA_F_min', 'TA_F_max'],
             axis=1, inplace=True)
-
     # Now add the calculated values (many come from daily data)
     monthly[site]['GPP_over_RE'] = (
             monthly[site].GPP_g_int/monthly[site].RECO_g_int)
-    monthly[site]['ET_F_mm_daytime'
-            ] = daily[site].ET_F_mm_daytime.resample('1M', how='sum')
-    monthly[site]['PET_F_mm_daytime'
-            ] = daily[site].PET_F_mm_daytime.resample('1M', how='sum')
-    monthly[site]['hrs_C_uptake_dayavg'] = daily[site].hrs_C_uptake.resample(
-            '1M', how='mean')
+    monthly[site]['ET_mm_dayint'
+            ] = daily[site].ET_mm_dayint.resample('1M').sum()
+    monthly[site]['PET_mm_dayint'
+            ] = daily[site].PET_mm_dayint.resample('1M').sum()
+    monthly[site]['hrs_C_uptake_dayavg'] = daily[site].hrs_C_uptake_sum.resample(
+            '1M').mean()
     monthly[site]['GPP_dailymax_avg'] = daily[site].GPP_max.resample(
-            '1M', how='mean')
+            '1M').mean()
     monthly[site]['RECO_dailymax_avg'] = daily[site].RECO_max.resample(
-            '1M', how='mean')
-    monthly[site]['TA_F_max_avg'] = daily[site].TA_F_max.resample(
-            '1M', how='mean')
-    monthly[site]['TA_F_min_avg'] = daily[site].TA_F_min.resample(
-            '1M', how='mean')
+            '1M').mean()
+    monthly[site]['TA_F_max_avg'] = daily[site].TA_F_max.resample('1M').mean()
+    monthly[site]['TA_F_min_avg'] = daily[site].TA_F_min.resample('1M').mean()
     monthly[site]['growing_deg_days_sum'
-            ] = daily[site].degree_days.resample('1M', how='sum')
+            ] = daily[site].degree_days.resample('1M').sum()
     monthly[site]['growing_deg_days_2_sum'
-            ] = daily[site].degree_days2.resample('1M', how='sum')
+            ] = daily[site].degree_days2.resample('1M').sum()
     monthly[site]['peak_NEE_dayfrac_avg'
-            ] = daily[site].peakNEE_dayfrac.resample('1M', how='mean')
+            ] = daily[site].peakNEE_dayfrac.resample('1M').mean()
     monthly[site]['peak_GPP_dayfrac_avg'
-            ] = daily[site].peakGPP_dayfrac.resample('1M', how='mean')
+            ] = daily[site].peakGPP_dayfrac.resample('1M').mean()
     monthly[site]['peak_RECO_dayfrac_avg'
-            ] = daily[site].peakRECO_dayfrac.resample('1M', how='mean')
+            ] = daily[site].peakRECO_dayfrac.resample('1M').mean()
+
     
     # Load monthly SPEI file for the site
     spei = pd.read_csv(spei_path + 'SPEI_monthly_US-' + site + '_nainterp.csv', 

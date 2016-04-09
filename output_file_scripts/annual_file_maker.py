@@ -22,10 +22,10 @@ sites = ['Seg', 'Ses', 'Sen', 'Wjs', 'Mpj', 'Mpg', 'Vcp', 'Vcm']
 #sites = ['Mpj', 'Mpg']
 
 # Create a wateryear-based annual file?
-wyear=True
+wyear= False
 wyear_days = 91
 #wyear_days = 60
-outfile = '../processed_data/annual_files/wateryear_NMEG_fluxes.csv'
+outfile = '../processed_data/annual_files/annual_NMEG_fluxes.csv'
 
 
 # Load hourly data into multiyear dataframes (1/site) within a dict

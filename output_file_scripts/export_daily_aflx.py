@@ -17,9 +17,9 @@ outpath = '/home/greg/current/NMEG_utils/processed_data/daily_aflx/'
 
 # Years to load
 startyr = 2007
-endyr = 2014
+endyr = 2015
 # Sites to load
-sites = ['Seg', 'Ses', 'Wjs', 'Mpj', 'Vcp', 'Vcm']
+sites = ['Seg', 'Ses', 'Sen', 'Wjs', 'Mpj', 'Mpg', 'Vcp', 'Vcm']
 # Fill a dict with multiyear dataframes for each site in sites
 hourly = { x : 
         ld.get_multiyr_aflx( 'US-' + x, af_path, gapfilled=True,
