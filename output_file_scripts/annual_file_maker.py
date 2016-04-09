@@ -16,18 +16,16 @@ import pdb as pdb
 
 # Years to load
 start = 2007
-end = 2014
+end = 2015
 # Sites to load
 sites = ['Seg', 'Ses', 'Sen', 'Wjs', 'Mpj', 'Mpg', 'Vcp', 'Vcm']
-sites = ['Mpj', 'Mpg']
-
-outfile = '../processed_data/annual_files/annual_NMEG_fluxes.csv'
+#sites = ['Mpj', 'Mpg']
 
 # Create a wateryear-based annual file?
 wyear=True
 wyear_days = 91
 #wyear_days = 60
-outfile = '../processed_data/annual_files/laura_wateryear_NMEG_fluxes.csv'
+outfile = '../processed_data/annual_files/wateryear_NMEG_fluxes.csv'
 
 
 # Load hourly data into multiyear dataframes (1/site) within a dict
@@ -35,19 +33,20 @@ hourly = { x :
         ld.get_multiyr_aflx( 'US-' + x, af_path, gapfilled=True,
             startyear=start, endyear=end) 
         for x in sites }
+
 # Add an observations column to sum
 for x in hourly.keys():
-    print(hourly[x].shape)
-    hourly[x] = hourly[x].loc[hourly[x].index.year > 2008]
+    # Count columns and nans in each timestamp
+    ncol = hourly[x].shape[1]
+    nan_count = hourly[x].apply(np.isnan).sum(axis=1)
+    # For if all columns in timestamp are NaN, don't count as observation
     hourly[x].insert(1, 'n_obs', 1)
-    print(hourly[x].shape)
-
+    hourly[x].loc[nan_count >= ncol, 'n_obs'] = 0
 
 # Shift the index if using wateryear
 if wyear:
     for x in hourly.keys():
         hourly[x].index = hourly[x].index + dt.timedelta(days=wyear_days)
-        
 
 # To get annual values of daytime ET we need to first calculate it on a daily
 # basis. It can then be added to a dict
@@ -74,13 +73,11 @@ for site in sites:
     # Get site data and rearrange cols
     new = yearly[site]
     new.insert(0, 'site', site)
-    nobs = new.pop('n_obs')
+    nobs = new.pop('n_obs_sum')
     new.insert(1, 'n_obs', nobs)
     # Add in resampled ET and PET data
-    new['ET_F_mm_daytime'] = ET_dict[site].ET_mm_daytime.resample(
-            'A', how='sum')
-    new['PET_F_mm_daytime'] = ET_dict[site].PET_mm_daytime.resample(
-            'A', how='sum')
+    new['ET_F_mm_dayint'] = ET_dict[site].ET_mm_dayint.resample('A').sum()
+    new['PET_F_mm_dayint'] = ET_dict[site].PET_mm_dayint.resample('A').sum()
 
     yearly_sums = yearly_sums.append(new)
     

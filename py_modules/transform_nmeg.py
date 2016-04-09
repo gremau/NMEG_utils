@@ -87,9 +87,9 @@ def get_daytime_et_pet( df, freq='1D',
     df_le.loc[~daytest, [le_col,tair_col]] = np.nan
 
     # Calculate mean daily LE and Tair
-    df_le_daily = df_le.resample( freq, how='mean')
+    df_le_daily = df_le.resample( freq ).mean()
     # Sum the number of daytime observations
-    df_le_daily['daytime_obs'] = df_le.daytime_obs.resample( freq, how='sum')
+    df_le_daily['daytime_obs'] = df_le.daytime_obs.resample( freq).sum()
     # Calculate the lambda value for each day
     df_le_daily['lmbda'] = ( 2.501 - 0.00236 * df_le_daily[tair_col] ) * 1000
     # Calculate ET ( mean daily LE / (1000*lambda) * # daytime seconds
@@ -157,10 +157,10 @@ def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
     df_max = df[ minmax_cols ]
     
     # Resample to daily using sum or mean
-    sums_resamp = df_sum.resample( freq, how='sum' )
-    avg_resamp = df_avg.resample( freq, how='mean' )
-    min_resamp = df_min.resample( freq, how='min' )
-    max_resamp = df_max.resample( freq, how='max' )
+    sums_resamp = df_sum.resample( freq ).sum()
+    avg_resamp = df_avg.resample( freq ).mean()
+    min_resamp = df_min.resample( freq ).min()
+    max_resamp = df_max.resample( freq ).max()
 
     # Rename the avg columns
     for i in avg_cols:
