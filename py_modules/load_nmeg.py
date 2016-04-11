@@ -148,11 +148,7 @@ def get_multiyr_aflx( site, afpath,
         file_gap_type = 'gapfilled'
     else:
         file_gap_type = 'with_gaps'
-    
-    # Create empty dataframe spanning all days in  startyear to endyear
-    newidx = pd.date_range( str( startyear ) + '-01-01 00:30:00',
-            str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
-    
+        
     # Get a list of filenames in the directory
     file_list = os.listdir( afpath )
 
@@ -172,7 +168,12 @@ def get_multiyr_aflx( site, afpath,
             # And append to site_df
             site_df = site_df.append( year_df, verify_integrity=True  )
         else:
+            startyear = startyear + 1
             print( 'WARNING: ' + fName + ' is missing')
+
+    # Create index spanning all days in  startyear to endyear
+    newidx = pd.date_range( str( startyear ) + '-01-01 00:30:00',
+            str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
 
     # Now standardize the time period and index of site_df
     idxyrs = site_df.index.year > startyear - 1;
