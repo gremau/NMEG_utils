@@ -116,7 +116,7 @@ get_daily_file <- function( site, type, make_new=FALSE ){
     dlypath <- paste('~/current/NMEG_utils/processed_data/daily_', 
                      type, sep='')
     filenames <- list.files(dlypath, full.names=TRUE)
-    filenames <- filenames[grepl(paste(site, '_daily_', type, sep=''),
+    filenames <- filenames[grepl(paste(site, '_daily_', type, '.csv', sep=''),
                                  filenames)]
     df <- read.csv(filenames, header=TRUE)
     # Remove last row (2015 data containing NAs - added by python code)
