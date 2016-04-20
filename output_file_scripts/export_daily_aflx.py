@@ -11,6 +11,8 @@ import sys
 sys.path.append( '/home/greg/current/NMEG_utils/py_modules/' )
 import load_nmeg as ld
 import transform_nmeg as tr
+import pandas as pd
+import datetime as dt
 
 af_path = '/home/greg/sftp/eddyflux/Ameriflux_files/provisional/'
 outpath = '/home/greg/current/NMEG_utils/processed_data/daily_aflx/'
@@ -46,5 +48,21 @@ for i, site in enumerate(sites):
     daily[site][ 'PET_mm_dayint'] = daily_et_pet.PET_mm_dayint
 
 # Write files to outpath
-{ x : daily[x].to_csv(outpath + 'US-' +x + '_daily_aflx.csv') for x in sites}
 
+#{ x : daily[x].to_csv(outpath + 'US-' +x + '_daily_aflx.csv') for x in sites}
+    # Write file
+
+import subprocess as sp
+git_sha = sp.check_output(
+        ['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
+
+meta_data = pd.Series([('site: {0}'.format(site)),
+    ('date generated: {0}'.format(str(dt.datetime.now()))),
+    ('script: export_daily_aflx.py'),
+    ('git HEAD SHA: {0}'.format(git_sha)),('--------')])
+for site in sites:
+    with open('../processed_data/daily_aflx/US-' + site +
+            '_daily_aflx.csv', 'w') as fout:
+        fout.write('---file metadata---\n')
+        meta_data.to_csv(fout, index=False)
+        daily[site].to_csv(fout, na_rep='NA')
