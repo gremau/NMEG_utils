@@ -118,7 +118,7 @@ get_daily_file <- function( site, type, make_new=FALSE ){
     filenames <- list.files(dlypath, full.names=TRUE)
     filenames <- filenames[grepl(paste(site, '_daily_', type, '.csv', sep=''),
                                  filenames)]
-    df <- read.csv(filenames, header=TRUE)
+    df <- read.csv(filenames, skip=6, header=TRUE)
     # Remove last row (2015 data containing NAs - added by python code)
     df <- df[1:nrow(df)-1,]
     return(df)

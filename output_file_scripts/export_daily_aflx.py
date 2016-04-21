@@ -56,11 +56,11 @@ import subprocess as sp
 git_sha = sp.check_output(
         ['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
 
-meta_data = pd.Series([('site: {0}'.format(site)),
-    ('date generated: {0}'.format(str(dt.datetime.now()))),
-    ('script: export_daily_aflx.py'),
-    ('git HEAD SHA: {0}'.format(git_sha)),('--------')])
 for site in sites:
+    meta_data = pd.Series([('site: {0}'.format(site)),
+        ('date generated: {0}'.format(str(dt.datetime.now()))),
+        ('script: export_daily_aflx.py'),
+        ('git HEAD SHA: {0}'.format(git_sha)),('--------')])
     with open('../processed_data/daily_aflx/US-' + site +
             '_daily_aflx.csv', 'w') as fout:
         fout.write('---file metadata---\n')

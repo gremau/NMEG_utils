@@ -19,7 +19,7 @@ import datetime as dt
 start = 2007
 end = 2015
 # Sites to load
-sites = ['Seg', 'Ses', 'Wjs', 'Mpj', 'Vcp', 'Vcm']
+sites = ['Seg', 'Ses', 'Sen', 'Wjs', 'Mpj', 'Mpg', 'Vcp', 'Vcm']
 #sites = ['Mpj','Wjs']
 
 # Load hourly data into multiyear dataframes (1/site) within a dict
