@@ -69,8 +69,8 @@ def getDailyPrismProvis(year, month, metdata, data_path, bil_name, coords_file):
     # Read in site coordinates, get date range and create a DataFrame
     #to fill
     pnts = pd.read_csv(coords_file)
-    drange =  pd.date_range('{0},1,1'.format(year),
-            '{0},12,31'.format(year), freq='D')
+    drange =  pd.date_range('{0}-1-1'.format(year),
+            '{0}-12-31'.format(year), freq='D')
     drange = drange[drange.month==month]
     df = pd.DataFrame(index=drange, columns=pnts.sitecode)
     for i in range(len(drange)):
@@ -100,7 +100,7 @@ def getMonthlyPrism( metdata, data_path, coords_file ):
     # Read in site coordinates, get date range and create a DataFrame
     #to fill
     pnts = pd.read_csv(coords_file)
-    drange =  pd.date_range('1,1,1981', '12,31,2014', freq='M')
+    drange =  pd.date_range('1-1-1981', '9-30-2015', freq='M')
     df = pd.DataFrame(index=drange, columns=pnts.sitecode)
     for i in range(len(drange)):
         # Create a tuple to fill the file dates in,
@@ -113,17 +113,45 @@ def getMonthlyPrism( metdata, data_path, coords_file ):
         # archive and remove the 'vsizip' part of pathname
         if metdata=='ppt':
             bil_file = (r'/vsizip/' + data_path +
-                    r'PRISM_{0}_stable_4kmM3_198101_201507_bil.zip/'.format(
+                    r'PRISM_{0}_stable_4kmM3_198101_201509_bil.zip/'.format(
                         metdata) +
                     r'PRISM_{0}_stable_4kmM3_{1}{2}_bil.bil'.format(
                         metdata, *ym_tuple))
         elif metdata=='tmean':
             bil_file = (r'/vsizip/' + data_path +
-                    r'PRISM_{0}_stable_4kmM2_198101_201507_bil.zip/'.format(
+                    r'PRISM_{0}_stable_4kmM2_198101_201509_bil.zip/'.format(
                         metdata) +
                     r'PRISM_{0}_stable_4kmM2_{1}{2}_bil.bil'.format(
                         metdata, *ym_tuple))
 
+        bil_ds = BilFile(bil_file)
+        for j in range(len(pnts.index)):
+            pt_val = bil_ds.extract_coord_val(pnts.lat[j], pnts.lon[j])
+            df.iloc[i, j] = pt_val
+    return df
+
+# Function for extracting monthly PRISM data from provisional files
+def getMonthlyPrismProvis(year, metdata, data_path, bil_name, coords_file):
+    # Read in site coordinates, get date range and create a DataFrame
+    #to fill
+    pnts = pd.read_csv(coords_file)
+    drange =  pd.date_range('{0}-10-01'.format(year),
+            '{0}-12-31'.format(year), freq='M')
+    #drange = drange[drange.month==month]
+    df = pd.DataFrame(index=drange, columns=pnts.sitecode)
+    for i in range(len(drange)):
+        # Create a tuple to fill the file dates in,
+        # pad month & day with zeros
+        ym_tuple = (str(drange.year[i]),
+                str(drange.month[i]).zfill(2))
+        # Create GDAL vsizip file path (read directly from zip archive)
+        # See https://trac.osgeo.org/gdal/wiki/UserDocs/ReadInZip
+        # If for some reason this vsizip interface won't work, extract the
+        # archive and remove the 'vsizip' part of pathname
+        bil_file = (r'/vsizip/' + data_path + bil_name + '/' +
+        r'PRISM_{0}_provisional_4kmM2_{1}{2}_bil.bil'.format(metdata, 
+            *ym_tuple))
+        #pdb.set_trace()
         bil_ds = BilFile(bil_file)
         for j in range(len(pnts.index)):
             pt_val = bil_ds.extract_coord_val(pnts.lat[j], pnts.lon[j])

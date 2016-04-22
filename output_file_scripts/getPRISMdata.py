@@ -59,10 +59,16 @@ for t in met_types:
         import matplotlib.pyplot as plt
         a.plot()
         plt.show()
-
     print(a.sum())
-    a.to_csv(out_path + 'PRISM_Monthly_{0}_1981_2014.csv'.format(t), 
+    a.to_csv(out_path + 'PRISM_Monthly_{0}_1981_2015.csv'.format(t), 
             index_label='date')
+
+
+#Code for making provisional files (can be appended to incomplete year data)
+bil_name = 'PRISM_tmean_provisional_4kmM2_201510_201603_bil.zip'
+prov = bf.getMonthlyPrismProvis(2015, 'tmean', bil_path, bil_name, 
+        site_coords_file) 
+prov.to_csv(out_path + 'PRISM_MonthlyProvis_tmean_2015.csv')
 
 
 # Now change bil_path and extract the 30yr normal precip
