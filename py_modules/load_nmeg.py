@@ -110,9 +110,9 @@ def load_daily_aflx_file( fname ) :
             na_values='-9999', index_col='Date' )
 
 
-    # We will reindex to include every 30-min period during the given year,
+    # We will reindex to include every 30-min period during all years,
     # from YR-01-01 00:30 to YR+1-01-01 00:00
-    full_idx = pd.date_range( '2007-01-01', '2015-01-01', freq = '1D')
+    full_idx = pd.date_range( '2007-01-01', '2016-01-01', freq = '1D')
 
     # Remove irregular data and reindex dataframes
     idxyrs = parsed_df.index.year > 2005;
@@ -123,6 +123,36 @@ def load_daily_aflx_file( fname ) :
     parsed_df = parsed_df.reindex( full_idx )
     
     return parsed_df
+
+
+def load_local_daily_file( fname, yrtrim=None ) :
+    """
+    Load greg's local daily ameriflux file and return a pandas DataFrame
+    object. These daily files are derived from NMEG ameriflux files on
+    socorro using "../output_file_scripts/export_daily_aflx.py".
+
+    Args:
+        fname (str)     : path and filename of desired AF file
+        trim (int list) : optional list of integer years to trim data to
+    Return:
+        parsed_df   : pandas DataFrame    
+    """        
+    print('Parsing ' + fname)
+    # Parse data file 
+    parsed_df =  pd.read_csv( fname, skiprows=range(0,6), header=0,
+            delimiter=',', index_col=0, parse_dates=True,
+            na_values='NA' )
+    
+    # If trim years provided, reindex to include every day during the 
+    # given years, from YR-01-01  to YR+1-01-01
+    if yrtrim:
+        full_idx = pd.date_range( str(yrtrim[0])+'-01-01',
+                str(yrtrim[1]+1)+'-01-01', freq='1D')
+        # Reindex dataframe, removing data outside startyr/endyr
+        parsed_df = parsed_df.reindex(full_idx)
+        
+    return parsed_df
+
 
 def get_multiyr_aflx( site, afpath,
                       startyear=now.year - 1, endyear=now.year - 1,
