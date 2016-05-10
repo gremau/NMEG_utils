@@ -15,18 +15,16 @@ import matplotlib.pyplot as plt
 import datetime as dt
 import numpy as np
 import pandas as pd
-import pdb as pdb
 
 sm_path = '/home/greg/sftp/eddyflux/Soil_files/provisional/'
-outpath = '/home/greg/current/NMEG_utils/processed_data/daily_soilmet/'
-
 
 # Years to load
 startyr = 2007
 endyr = 2015
 # Sites to load
-sites = ['Seg', 'Ses', 'Wjs', 'Mpj', 'Vcp', 'Vcm']
-altsites = ['GLand', 'SLand', 'JSav', 'PJ', 'PPine', 'MCon']
+sites = ['Seg', 'Ses', 'Sen', 'Wjs', 'Mpj', 'Mpg', 'Vcp', 'Vcm']
+altsites = ['GLand', 'SLand', 'New_GLand', 'JSav', 'PJ', 'PJ_girdle',
+	    'PPine', 'MCon']
 
 # Fill a dict with multiyear dataframes for each site in sites
 hourly = { x : 
@@ -58,7 +56,6 @@ def get_depth_mean( df, var,  d_string, d_range ):
         col_select = col_select + get_col
     
     # Calculate depth range SWC mean
-    #pdb.set_trace()
     df[d_string + '_swc'] = df[col_select].mean(axis=1, skipna=True)
     
     return(df)

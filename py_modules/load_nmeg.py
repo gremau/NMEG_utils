@@ -331,7 +331,8 @@ def load_soilmet_qc(fname):
         mn =  int( M )
         sec = int( S )
         return ( dt.datetime( yr, mon, day, hr, mn, sec ))
-
+    
+    print('Parsing ' + fname)
 
     soilmet_df = pd.read_csv(fname, delimiter=',', 
                 parse_dates={'tstamp':[0, 1, 2, 3, 4, 5]},
