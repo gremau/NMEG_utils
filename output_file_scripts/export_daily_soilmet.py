@@ -14,6 +14,7 @@ import transform_nmeg as tr
 import matplotlib.pyplot as plt
 import datetime as dt
 import numpy as np
+import pandas as pd
 import pdb as pdb
 
 sm_path = '/home/greg/sftp/eddyflux/Soil_files/provisional/'
@@ -22,7 +23,7 @@ outpath = '/home/greg/current/NMEG_utils/processed_data/daily_soilmet/'
 
 # Years to load
 startyr = 2007
-endyr = 2014
+endyr = 2015
 # Sites to load
 sites = ['Seg', 'Ses', 'Wjs', 'Mpj', 'Vcp', 'Vcm']
 altsites = ['GLand', 'SLand', 'JSav', 'PJ', 'PPine', 'MCon']
@@ -34,7 +35,7 @@ hourly = { x :
         for x in altsites }
 
 # Resample to daily means
-daily = { x : hourly[x].resample( '1D', how='mean' )
+daily = { x : hourly[x].resample('1D').mean()
         for x in hourly.keys() }
 
 # Replace alternate sitenames with ameriflux style names
@@ -98,10 +99,20 @@ daily['Ses'].deep_swc[idx] = daily['Ses'].deep_swc[idx] - 0.037
 # Append interpolated means for each depth range
 daily = { x : get_depth_mean_interp(daily[x], x) for x in daily.keys() }
 
-# Write files to outpath
-{ x : daily[x].to_csv(outpath + 'US-' +x + '_daily_soilmet.csv') for x in sites}
+import subprocess as sp
+git_sha = sp.check_output(
+        ['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
 
-
+for site in sites:
+    meta_data = pd.Series([('site: {0}'.format(site)),
+        ('date generated: {0}'.format(str(dt.datetime.now()))),
+        ('script: export_daily_soilmet.py'),
+        ('git HEAD SHA: {0}'.format(git_sha)),('--------')])
+    with open('../processed_data/daily_soilmet/US-' + site +
+            '_daily_soilmet.csv', 'w') as fout:
+        fout.write('---file metadata---\n')
+        meta_data.to_csv(fout, index=False)
+        daily[site].to_csv(fout, na_rep='NA')
 
 # For exporting monthly shallow, mid, and deep files
 #outpath = '/home/greg/current/NMEG_utils/processed_data/'

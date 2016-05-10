@@ -125,14 +125,14 @@ def load_daily_aflx_file( fname ) :
     return parsed_df
 
 
-def load_local_daily_file( fname, yrtrim=None ) :
+def load_local_file( fname, yrtrim=None ) :
     """
-    Load greg's local daily ameriflux file and return a pandas DataFrame
-    object. These daily files are derived from NMEG ameriflux files on
-    socorro using "../output_file_scripts/export_daily_aflx.py".
+    Load greg's local NMEG files and return a pandas DataFrame object.
+    These files are derived from NMEG ameriflux files (or similar) on
+    socorro using scripts found in "../output_file_scripts/".
 
     Args:
-        fname (str)     : path and filename of desired AF file
+        fname (str)     : path and filename of desired file
         trim (int list) : optional list of integer years to trim data to
     Return:
         parsed_df   : pandas DataFrame    

@@ -271,8 +271,6 @@ def var_climatology( ser ) :
             len(np.unique(ser.index.year))-1 )
     clim[ 'allyr_cv' ] = clim.allyr_stdev / clim.allyr_mean
     clim[ 'allyr_cv2' ] = clim.allyr_stdev / ser.mean()
-    #clim[ '30day_sum' ] = sum_30day.mean(axis=1)
-    #clim[ '30day_sum_std' ] = sum_30day.std(axis=1)
 
     return clim
 
