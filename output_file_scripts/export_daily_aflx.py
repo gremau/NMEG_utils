@@ -34,7 +34,8 @@ daily = { x :
         tr.resample_30min_aflx( hourly[x], freq='1D', 
             c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
             le_flux=[ 'LE_F' ], 
-            avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET_F', 'VPD_F', 'PAR' ],
+            avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET_F', 'VPD_F', 'PAR',
+                'LE_F', 'H_F' ],
             sum_cols=['P_F'] , tair_col='TA_F' ) 
         for x in hourly.keys() }
 
