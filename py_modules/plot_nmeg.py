@@ -63,11 +63,11 @@ def plot_tseries( dict_in, varname, texty, fighandle, ylab,
         plt.xlim( xlims )
         plt.text( dt.datetime( 2007, 2, 1 ), texty, sitenames[site], size=14  )
         plt.setp( ax[i].get_yticklabels(), fontsize=13)
-        if i < 5:
+        if i < len(ordkeys)-1:
             plt.setp( ax[i].get_xticklabels(), visible=False)
     
-    for i in (0, 2, 4):
+    for i in range(0, len(ordkeys), 2):
         ax[i].set_ylabel(ylab, fontsize=14)
     
-    plt.setp( ax[5].get_xticklabels(), fontsize=14 )
+    plt.setp( ax[len(ordkeys)-1].get_xticklabels(), fontsize=14 )
     return ax
