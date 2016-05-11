@@ -294,7 +294,7 @@ def var_anomaly( ser, norm=False ) :
     serclim = var_climatology( ser )
     for i in np.unique(ser.index.year):
         if norm:
-            anom_norm[ anom_norm.index.year==i ] = ((ser[ ser.index.year==i ] -
+            anom[ anom.index.year==i ] = ((ser[ ser.index.year==i ] -
                 serclim.allyr_mean[0:len(ser[ ser.index.year==i ])].values) / 
                 serclim.allyr_mean[0:len(ser[ ser.index.year==i ])].values)
         else:
