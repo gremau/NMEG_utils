@@ -11,8 +11,8 @@ library(plyr)
 # load_nmeg.py
 load_aflx_file <- function( fname ){
 
-    header <- read.csv(fname, skip=3, nrows=1)
-    df <- read.csv(fname, skip=5, header=FALSE)
+    header <- read.csv(fname, skip=6, nrows=1)
+    df <- read.csv(fname, skip=8, header=FALSE)
     df[df==-9999] <- NA
     colnames(df) <- colnames(header)
 
@@ -104,7 +104,7 @@ get_multiyr_soilmet <- function( site, base_path, ext,
 # Load shared daily file for a site from NMEG_utils. If asked, this script
 # will call the python script that makes these files. Note that the python
 # script that makes these fills in missing columns, standardizes the time
-# period (2007-2014), reindexes the dataframe, and verifies the index. So,
+# period (2007-2015), reindexes the dataframe, and verifies the index. So,
 # there should be no missing/duplicated data columns or time periods.
 
 get_daily_file <- function( site, type, make_new=FALSE ){
