@@ -236,9 +236,12 @@ def add_WY_cols( df, ndays=91 ) :
     df_wy['doy_w'] = wy.dayofyear
     # Add hydrologic season columns
     df_wy['season'] = 'Null'
-    df_wy.season[(df_wy.index.month > 10) | (df_wy.index.month < 3)] = 'cold'
-    df_wy.season[(df_wy.index.month > 2) & (df_wy.index.month < 7)] = 'spring'
-    df_wy.season[(df_wy.index.month > 6) & (df_wy.index.month < 11)] = 'monsoon'
+    df_wy.loc[(df_wy.index.month > 10) | (df_wy.index.month < 3),
+            'season'] = 'cold'
+    df_wy.loc[(df_wy.index.month > 2) & (df_wy.index.month < 7),
+            'season'] = 'spring'
+    df_wy.loc[(df_wy.index.month > 6) & (df_wy.index.month < 11),
+            'season'] = 'monsoon'
 
     return df_wy
 
