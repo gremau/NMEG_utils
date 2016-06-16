@@ -40,7 +40,7 @@ get_multiyr_aflx <- function( site, afpath,
     my_df <- NULL
 
     for (i in startyear:endyear){
-        fname <- paste(afpath, 'US-', site, '_', as.character(i),
+        fname <- paste(afpath, '/US-', site, '_', as.character(i),
                        '_', file_gap_type, '.txt', sep='')
         if (fname %in% filenames){
             df_yr <- load_aflx_file( fname )
