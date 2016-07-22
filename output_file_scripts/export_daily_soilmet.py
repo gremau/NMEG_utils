@@ -80,14 +80,21 @@ for i in range(0, 3):
         for x in daily.keys() }
 
 # Remove some bad data
-idx = daily['Seg'].index.year < 2010
-daily['Seg'].shall_swc[idx] = np.nan
-daily['Seg'].mid_swc[idx] = np.nan
-daily['Seg'].deep_swc[idx] = np.nan
 
+# Early data from Seg (2007-spring 2009) looks different from later years
+# There is a bit of a level shift - consider removing it
+#idx = daily['Seg'].index.year < 2010
+#daily['Seg'].shall_swc[idx] = np.nan
+#daily['Seg'].mid_swc[idx] = np.nan
+#daily['Seg'].deep_swc[idx] = np.nan
+
+# There is a level shift in the soil water content data for SLand in May 2011
+# The code below removes the day of the shift and then shifts data from before
+# this so things match better (only affects depth averages)
 daily['Ses'].shall_swc[daily['Ses'].index==dt.datetime(2011, 5, 23)] = np.nan
 daily['Ses'].mid_swc[daily['Ses'].index==dt.datetime(2011, 5, 23)] = np.nan
 daily['Ses'].deep_swc[daily['Ses'].index==dt.datetime(2011, 5, 23)] = np.nan
+
 idx = daily['Ses'].index < dt.datetime(2011, 5, 23)
 daily['Ses'].shall_swc[idx] = daily['Ses'].shall_swc[idx] + 0.022
 daily['Ses'].mid_swc[idx] = daily['Ses'].mid_swc[idx] - 0.025
