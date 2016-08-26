@@ -23,7 +23,7 @@ import pdb
 # NOTE - Manually change the month in the PRISM_daily directory and
 # date range if doing an incomplete year dataset
 # (current year to 6 months after)
-years = list(range(2007, 2016))
+years = list(range(2007, 2017))
 site_coords_file = '/home/greg/current/NMEG_utils/site_coords.txt'
 make_plot=False
 
@@ -39,7 +39,7 @@ for yr in years:
         plt.show()
 
     print(a.sum())
-    a.to_csv(out_path + 'PRISM_Daily_ppt_{0}_new.csv'.format(yr), 
+    a.to_csv(out_path + 'PRISM_Daily_ppt_{0}.csv'.format(yr), 
             index_label='date')
 pdb.set_trace()
 # Code for making provisional files (can be appended to incomplete year data)
