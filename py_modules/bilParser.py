@@ -40,8 +40,8 @@ def getDailyPrism(year, metdata, data_path, coords_file):
     # Read in site coordinates, get date range and create a DataFrame
     #to fill
     pnts = pd.read_csv(coords_file)
-    drange =  pd.date_range('1,1,{0}'.format(year),
-            '12,31,{0}'.format(year), freq='D')
+    drange =  pd.date_range('1-1-{0}'.format(year),
+            '12-31-{0}'.format(year), freq='D')
     df = pd.DataFrame(index=drange, columns=pnts.sitecode)
     for i in range(len(drange)):
         # Create a tuple to fill the file dates in,
@@ -57,7 +57,6 @@ def getDailyPrism(year, metdata, data_path, coords_file):
         r'PRISM_{0}_stable_4kmD2_{1}0101_{1}1231_bil.zip/'.format(
             metdata, year) +
         r'PRISM_{0}_stable_4kmD2_{1}{2}{3}_bil.bil'.format(metdata, *ymd_tuple))
-        #pdb.set_trace()
         bil_ds = BilFile(bil_file)
         for j in range(len(pnts.index)):
             pt_val = bil_ds.extract_coord_val(pnts.lat[j], pnts.lon[j])
