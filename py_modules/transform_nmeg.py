@@ -16,8 +16,8 @@ now = dt.datetime.now()
 
 def sum_30min_c_flux( df ) :
     """
-    Convert 30min molar C flux to mass flux ( umol/m^2/s to g/m^2 ) and
-    sum (integrate) for the 30min periods for each column of data frame
+    Convert 30min molar CO2 flux to mass C flux ( umolCO2/m^2/s to gC/m^2 )
+    and sum (integrate) for the 30min periods for each column of data frame
     in the colnames variable.
     """
     # Initialize returned variables
@@ -124,7 +124,7 @@ def get_daytime_et_pet( df, freq='1D',
 
 def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ], 
         le_flux=[ 'LE_F' ], avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET_F' ],
-        minmax_cols=[ 'TA_F', 'VPD_F' ],
+        minmax_cols=[ 'TA_F', 'VPD_F' ], int_cols=['LE_F', 'H_F'],
         sum_cols=[ 'P_F' ] , tair_col='TA_F' ):
     """
     Integrate 30 minute flux data into a daily (or longer) frequency file. C
@@ -139,6 +139,8 @@ def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
         le_flux     : latent heat flux header name(s)
         avg_cols    : list of header names (strings) to average
         minmax_cols : list of header names (strings) to convert to min/max
+        int_cols    : list of header names (strings) to integrate (*1800)
+
         sum_cols    : list of header names (strings) to sum
         tair_col    : air temperature header (string) used for ET calculation
 
@@ -151,18 +153,24 @@ def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
     # Calculate integrated ET
     et_flux_sum = sum_30min_et( df[ le_flux ], df[ tair_col ] )
 
-    # Subset site data into summable and averagable data
+    # Subset site data into summable, averagable, etc data
     df_sum = pd.concat( [ c_flux_sums, et_flux_sum, df[ sum_cols ]], 
                           axis=1 );
+    df_int = df[ int_cols ]*1800
     df_avg = df[ avg_cols ]
     df_min = df[ minmax_cols ]
     df_max = df[ minmax_cols ]
     
     # Resample to daily using sum or mean
     sums_resamp = df_sum.resample( freq ).sum()
+    int_resamp = df_int.resample( freq ).sum()
     avg_resamp = df_avg.resample( freq ).mean()
     min_resamp = df_min.resample( freq ).min()
     max_resamp = df_max.resample( freq ).max()
+    
+    # Rename the int columns
+    for i in int_cols:
+        int_resamp.rename(columns={ i:i + '_int'}, inplace=True)
 
     # Rename the avg columns
     for i in avg_cols:
@@ -179,7 +187,7 @@ def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
 
 
     # Put to dataframes back together
-    df_resamp = pd.concat( [ sums_resamp, avg_resamp, 
+    df_resamp = pd.concat( [ sums_resamp, avg_resamp, int_resamp,
         min_resamp, max_resamp ], axis=1 )
 
     return df_resamp

@@ -14,8 +14,11 @@ import transform_nmeg as tr
 import pandas as pd
 import datetime as dt
 
-af_path = '/home/greg/sftp/eddyflux/Ameriflux_files/provisional/'
-outpath = '/home/greg/current/NMEG_utils/processed_data/daily_aflx/'
+# Name of the data release, set paths
+drelease = 'FLUXNET2015_a'
+
+af_path = '/home/greg/sftp/eddyflux/Ameriflux_files/' + drelease + '/'
+outpath = '/home/greg/current/NMEG_utils/processed_data/daily_aflx/' + drelease + '/'
 
 # Years to load
 startyr = 2007
@@ -36,6 +39,7 @@ daily = { x :
             le_flux=[ 'LE_F' ], 
             avg_cols=[ 'TA_F', 'RH_F', 'SW_IN_F', 'RNET_F', 'VPD_F', 'PAR',
                 'LE_F', 'H_F' ],
+            int_cols=['LE_F', 'H_F' ],
             sum_cols=['P_F'] , tair_col='TA_F' ) 
         for x in hourly.keys() }
 
@@ -48,11 +52,6 @@ for i, site in enumerate(sites):
     daily[site][ 'ET_mm_dayint'] = daily_et_pet.ET_mm_dayint
     daily[site][ 'PET_mm_dayint'] = daily_et_pet.PET_mm_dayint
 
-# Write files to outpath
-
-#{ x : daily[x].to_csv(outpath + 'US-' +x + '_daily_aflx.csv') for x in sites}
-    # Write file
-
 import subprocess as sp
 git_sha = sp.check_output(
         ['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
@@ -62,7 +61,7 @@ for site in sites:
         ('date generated: {0}'.format(str(dt.datetime.now()))),
         ('script: export_daily_aflx.py'),
         ('git HEAD SHA: {0}'.format(git_sha)),('--------')])
-    with open('../processed_data/daily_aflx/US-' + site +
+    with open(outpath + 'US-' + site +
             '_daily_aflx.csv', 'w') as fout:
         fout.write('---file metadata---\n')
         meta_data.to_csv(fout, index=False)
