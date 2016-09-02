@@ -181,13 +181,13 @@ def get_multiyr_aflx( site, afpath,
         
     # Get a list of filenames in the directory
     file_list = os.listdir( afpath )
-
     # Select desired files from file_list (by site and gapfilling)
     site_file_list = [ s for s in file_list if site in s ]
     site_file_list = [ s for s in site_file_list if file_gap_type in s ]
     # Initialize DataFrame
     site_df = pd.DataFrame()
     # Loop through each year and fill the dataframe
+    empty_yrs = list() # to be filled with years that have no file
     for j in range(startyear, endyear + 1):
         fName = '{0}_{1}_{2}.txt'.format( site, j, file_gap_type )
         # If theres is a file for that year, load it
@@ -198,11 +198,13 @@ def get_multiyr_aflx( site, afpath,
             # And append to site_df
             site_df = site_df.append( year_df, verify_integrity=True  )
         else:
-            startyear = startyear + 1
+            # Add empty year so we can trim data
+            empty_yrs.append(j)
             print( 'WARNING: ' + fName + ' is missing')
-
-    # Create index spanning all days in  startyear to endyear
-    newidx = pd.date_range( str( startyear ) + '-01-01 00:30:00',
+    # Get non empty years
+    non_empty = [x for x in range(startyear, endyear) if x not in empty_yrs]
+    # Create index spanning all days in min(non_empty) to endyear
+    newidx = pd.date_range( str(min(non_empty)) + '-01-01 00:30:00',
             str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
 
     # Now standardize the time period and index of site_df

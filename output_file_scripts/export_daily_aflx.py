@@ -22,15 +22,15 @@ outpath = '/home/greg/current/NMEG_utils/processed_data/daily_aflx/' + drelease 
 
 # Years to load
 startyr = 2007
-endyr = 2015
+endyr = 2016
 # Sites to load
 sites = ['Seg', 'Ses', 'Sen', 'Wjs', 'Mpj', 'Mpg', 'Vcp', 'Vcm']
+
 # Fill a dict with multiyear dataframes for each site in sites
 hourly = { x : 
         ld.get_multiyr_aflx( 'US-' + x, af_path, gapfilled=True,
             startyear=startyr, endyear=endyr) 
         for x in sites }
-
 
 # Resample to daily sums with integration
 daily = { x : 

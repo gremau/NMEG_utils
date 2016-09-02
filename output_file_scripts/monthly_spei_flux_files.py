@@ -3,7 +3,12 @@
 
 import sys
 sys.path.append( '/home/greg/current/NMEG_utils/py_modules/' )
-af_path = '/home/greg/sftp/eddyflux/Ameriflux_files/provisional/'
+
+# Name of the data release, set paths
+drelease = 'FLUXNET2015_a'
+
+af_path = '/home/greg/sftp/eddyflux/Ameriflux_files/' + drelease + '/'
+outpath = '/home/greg/current/NMEG_utils/processed_data/monthly_spei_flux/' + drelease + '/'
 
 import load_nmeg as ld
 import transform_nmeg as tr
@@ -155,7 +160,7 @@ for site in sites:
         ('date generated: {0}'.format(str(dt.datetime.now()))),
         ('script: monthly_spei_flux_files.py'),
         ('git HEAD SHA: {0}'.format(git_sha)),('--------')])
-    with open('../processed_data/monthly_spei_flux/monthly_spei_flux_'
+    with open(outpath + 'monthly_spei_flux_'
             + site + '.csv', 'w') as fout:
         fout.write('---file metadata---\n')
         meta_data.to_csv(fout, index=False)
