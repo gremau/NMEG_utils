@@ -151,7 +151,11 @@ def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
     # Calculate integrated c fluxes
     c_flux_sums = sum_30min_c_flux( df[ c_fluxes ] )
     # Calculate integrated ET
-    et_flux_sum = sum_30min_et( df[ le_flux ], df[ tair_col ] )
+    try: # Sometimes only C fluxes are provided, handle exceptions
+        et_flux_sum = sum_30min_et( df[ le_flux ], df[ tair_col ] )
+    except:
+        et_flux_sum = pd.DataFrame(index=df.index)
+
 
     # Subset site data into summable, averagable, etc data
     df_sum = pd.concat( [ c_flux_sums, et_flux_sum, df[ sum_cols ]], 
@@ -163,24 +167,31 @@ def resample_30min_aflx( df, freq='1D', c_fluxes=[ 'GPP', 'RECO', 'FC_F' ],
     
     # Resample to daily using sum or mean
     sums_resamp = df_sum.resample( freq ).sum()
-    int_resamp = df_int.resample( freq ).sum()
-    avg_resamp = df_avg.resample( freq ).mean()
-    min_resamp = df_min.resample( freq ).min()
-    max_resamp = df_max.resample( freq ).max()
+    # Sometimes only C fluxes are provided, handle exceptions
+    try: 
+        int_resamp = df_int.resample( freq ).sum()
+        avg_resamp = df_avg.resample( freq ).mean()
+        min_resamp = df_min.resample( freq ).min()
+        max_resamp = df_max.resample( freq ).max()
     
-    # Rename the int columns
-    for i in int_cols:
-        int_resamp.rename(columns={ i:i + '_int'}, inplace=True)
+        # Rename the int columns
+        for i in int_cols:
+            int_resamp.rename(columns={ i:i + '_int'}, inplace=True)
 
-    # Rename the avg columns
-    for i in avg_cols:
-        avg_resamp.rename(columns={ i:i + '_avg'}, inplace=True)
+        # Rename the avg columns
+        for i in avg_cols:
+            avg_resamp.rename(columns={ i:i + '_avg'}, inplace=True)
         
-    # Rename the min/max columns
-    for i in minmax_cols:
-        min_resamp.rename(columns={ i:i + '_min'}, inplace=True)
-        max_resamp.rename(columns={ i:i + '_max'}, inplace=True)
-    
+        # Rename the min/max columns
+        for i in minmax_cols:
+            min_resamp.rename(columns={ i:i + '_min'}, inplace=True)
+            max_resamp.rename(columns={ i:i + '_max'}, inplace=True)
+    except:
+        int_resamp = pd.DataFrame(index=sums_resamp.index)
+        avg_resamp = pd.DataFrame(index=sums_resamp.index)
+        min_resamp = pd.DataFrame(index=sums_resamp.index)
+        max_resamp = pd.DataFrame(index=sums_resamp.index)
+
     # Rename the sum columns
     for i in sum_cols:
         sums_resamp.rename(columns={ i:i + '_sum'}, inplace=True)

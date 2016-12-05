@@ -202,10 +202,15 @@ def get_multiyr_aflx( site, afpath,
             empty_yrs.append(j)
             print( 'WARNING: ' + fName + ' is missing')
     # Get non empty years
+    #pdb.set_trace()
     non_empty = [x for x in range(startyear, endyear) if x not in empty_yrs]
-    # Create index spanning all days in min(non_empty) to endyear
-    newidx = pd.date_range( str(min(non_empty)) + '-01-01 00:30:00',
-            str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
+    if len(non_empty) > 0:
+        # Create index spanning all days in min(non_empty) to endyear
+        newidx = pd.date_range( str(min(non_empty)) + '-01-01 00:30:00',
+                str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
+    else:
+        newidx = pd.date_range( str( startyear ) + '-01-01 00:30:00',
+                str( endyear + 1 ) + '-01-01 00:00:00', freq = '30T')
 
     # Now standardize the time period and index of site_df
     idxyrs = site_df.index.year > startyear - 1;
@@ -511,7 +516,7 @@ def add_eddyproc_uncertainty( df, site, basepath, year, unc_vars=[] ) :
 
     return df_unc
 
-def get_multiyr_eddyproc( site, base_path,
+def get_multiyr_eddyproc( site, base_path, GL2010=False,
                       startyear=now.year - 1, endyear=now.year - 1) :
     """
     Load a list of 1-year eddyproc output files, append them, and then return
@@ -533,14 +538,20 @@ def get_multiyr_eddyproc( site, base_path,
     
     # Get a list of filenames in the directory
     file_list = os.listdir( base_path + site )
+    if GL2010:
+        file_list2 = [ s for s in file_list if 'GL2010' in s ]
+        fName_base = 'DataSetafterFluxpartGL2010'
+    else:
+        file_list2 = [ s for s in file_list if 'GL2010' not in s ]
+        fName_base = 'DataSetafterFluxpart'
 
     # Initialize DataFrame
     site_df = pd.DataFrame()
     # Loop through each year and fill the dataframe
     for j in range(startyear, endyear + 1):
-        fName = 'DataSetafterFluxpart_{0}.txt'.format( j )
+        fName = fName_base + '_{0}.txt'.format( j )
         # If theres is a file for that year, load it
-        if fName in file_list:
+        if fName in file_list2:
             # Call load_eddyproc_unc
             year_df = load_eddyproc_output( base_path + site + '/' + fName, j )
             # And append to site_df

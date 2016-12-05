@@ -22,10 +22,11 @@ import datetime as dt
 
 # Years to load
 start = 2007
-end = 2015
+end = 2016
 # Sites to load
 sites = ['Seg', 'Ses', 'Sen', 'Wjs', 'Mpj', 'Mpg', 'Vcp', 'Vcm']
-#sites = ['Mpj','Wjs']
+#sites = ['Vcs']
+
 
 # Load hourly data into multiyear dataframes (1/site) within a dict
 hourly = { x :
