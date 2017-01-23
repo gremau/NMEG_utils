@@ -147,7 +147,7 @@ def load_local_file( fname, yrtrim=None ) :
     # given years, from YR-01-01  to YR+1-01-01
     if yrtrim:
         full_idx = pd.date_range( str(yrtrim[0])+'-01-01',
-                str(yrtrim[1]+1)+'-01-01', freq='1D')
+                str(yrtrim[1])+'-12-31', freq='1D')
         # Reindex dataframe, removing data outside startyr/endyr
         parsed_df = parsed_df.reindex(full_idx)
         
