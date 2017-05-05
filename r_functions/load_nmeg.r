@@ -114,7 +114,7 @@ get_daily_file <- function( site, type, make_new=FALSE ){
     }
     # The daily files are put here:
     dlypath <- paste('~/current/NMEG_utils/processed_data/daily_', 
-                     type, sep='')
+                     type, '/FLUXNET2015_a', sep='')
     filenames <- list.files(dlypath, full.names=TRUE)
     filenames <- filenames[grepl(paste(site, '_daily_', type, '.csv', sep=''),
                                  filenames)]
