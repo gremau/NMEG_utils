@@ -109,11 +109,11 @@ get_multiyr_soilmet <- function( site, base_path, ext,
 
 get_daily_file <- function( site, type, make_new=FALSE ){
     if (make_new==TRUE){
-        system(paste('python ~/current/NMEG_utils/output_file_scripts/',
+        system(paste('python ~/current/GitHub/NMEG_utils/output_file_scripts/',
                      'export_daily_', type, '.py', sep=''))
     }
     # The daily files are put here:
-    dlypath <- paste('~/current/NMEG_utils/processed_data/daily_', 
+    dlypath <- paste('~/current/GitHub/NMEG_utils/processed_data/daily_', 
                      type, '/FLUXNET2015_a', sep='')
     filenames <- list.files(dlypath, full.names=TRUE)
     filenames <- filenames[grepl(paste(site, '_daily_', type, '.csv', sep=''),
